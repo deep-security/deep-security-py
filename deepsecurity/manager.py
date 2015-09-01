@@ -41,6 +41,12 @@ class Manager(object):
 		self.log = self._setup_logging()
 		self._set_url()
 
+	def __str__(self):
+		"""
+		Return a better string representation
+		"""
+		return "Manager <{}:{}>".format(self._hostname, self._port)
+
 	# *****************************************************************
 	# Properties
 	# *****************************************************************
