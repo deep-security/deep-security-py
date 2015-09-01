@@ -50,7 +50,8 @@ for comp_id, details in mgr.computers.items():
 for id, comp in mgr.computers.items():
 	comp.scan_for_recommendations()
 
-# Old school, this is a nice way to finish off the SOAP sessions under the hood
-#   just include it as the 'function of shame' until it is phased out ;-)
+# Old school but key. API access is the same as a user logging in. If you are going to
+# start a large number of session, you'll need to finish each of them to avoid
+# exception being thrown
 mgr.finish_session()
 ```

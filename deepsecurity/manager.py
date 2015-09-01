@@ -36,6 +36,7 @@ class Manager(object):
 		self.policies = {}
 		self.computers = {}
 		self.computer_details = {}
+		self.cloud_accounts = {}
 
 		# Setup functions
 		self.log = self._setup_logging()
@@ -153,6 +154,9 @@ class Manager(object):
 			'Content-Type': 'application/json',
 			}
 
+		# authentication calls don't accept the Accept header
+		if call['method'].startswith('authentication'): del(headers['Accept'])
+
 		# Make sure we can make a REST call
 		if not self.base_url_for_rest:
 			self._set_url()
@@ -223,7 +227,7 @@ class Manager(object):
 
 		# If the call requires authentication, make sure we have a current session
 		if call_details.has_key('auth') and call_details['auth']:
-			if not self.session_id_soap: 
+			if (call['api'] == 'soap' and not self.session_id_soap) or (call['api'] == 'rest' and not self.session_id_rest): 
 				self.log.error("Could not make %s API call. This call requires a valid session" % call_details['api'].upper())
 				return result
 
@@ -293,7 +297,7 @@ class Manager(object):
 			rest_call = self._get_call_structure(api='rest')
 			rest_call['auth'] = False
 			rest_call['method'] = 'authentication/login/primary'
-			rest_call['data'] = {'dsCredentials':
+			rest_call['data'] = { 'dsCredentials':
 					{
 				   	'userName': username,
 				  	'password': password,
@@ -529,6 +533,7 @@ class Manager(object):
 
 	def get_cloud_accounts(self):
 		"""
+		Get a list of the currently configured cloud accounts
 		"""
 		call = {
 					'api': 'rest',
@@ -540,7 +545,12 @@ class Manager(object):
 				}
 		
 		results = self._make_call(call)
-		return results
+		if results and results.ok:
+			results_doc = results.json()
+			if results_doc.has_key('cloudAccountListing'):
+				self.cloud_accounts = results_doc['cloudAccountListing']
+
+		return self.cloud_accounts
 
 	# *****************************************************************
 	# Public methods - reflected on Computer object
