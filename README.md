@@ -50,5 +50,7 @@ for comp_id, details in mgr.computers.items():
 for id, comp in mgr.computers.items():
 	comp.scan_for_recommendations()
 
+# Old school, this is a nice way to finish off the SOAP sessions under the hood
+#   just include it as the 'function of shame' until it is phased out ;-)
 mgr.finish_session()
 ```
