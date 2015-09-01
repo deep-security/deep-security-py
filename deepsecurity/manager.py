@@ -22,7 +22,7 @@ class Manager(object):
 	SOAP and REST APIs
 	"""
 	def __init__(self):
-		self.version = '9.0.5364'
+		self.version = '9.6'
 		self._hostname = 'app.deepsecurity.trendmicro.com' # default to Deep Security as a Service
 		self._port = 443 # on-premise defaults to 4119
 		self.rest_api_path = 'rest'
@@ -32,10 +32,10 @@ class Manager(object):
 		self.soap_client = None
 
 		# Deep Security data
-		self.computer_groups = None
-		self.policies = None
-		self.computers = None
-		self.computer_details = None
+		self.computer_groups = {}
+		self.policies = {}
+		self.computers = {}
+		self.computer_details = {}
 
 		# Setup functions
 		self.log = self._setup_logging()
@@ -360,6 +360,14 @@ class Manager(object):
 	
 		self.session_id_soap = None
 		self.session_id_rest = None
+
+	def cache_info_locally(self):
+		"""
+		Cache the information about computers, groups, and policies locally
+		"""
+		self.get_computers_with_details()
+		self.get_computer_groups()
+		self.get_policies()
 		
 	def is_up(self, full_check=False):
 		"""
@@ -450,7 +458,7 @@ class Manager(object):
 			for computer in result:
 				self.computers[computer['ID']] = computer
 
-	def get_all_computers(self, detail_level='HIGH'):
+	def get_computers_with_details(self, detail_level='HIGH'):
 		"""
 		Get a list of all the Computers managed by Deep Security
 		"""
