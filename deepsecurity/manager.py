@@ -50,7 +50,6 @@ class Manager(object):
 	# *****************************************************************
 	# Properties
 	# *****************************************************************
-
 	# Any change to .hostname requires the API endpoints be recalculated
 	@property
 	def hostname(self): return self._hostname
@@ -149,6 +148,11 @@ class Manager(object):
 		"""
 		result = None
 
+		headers = {
+			'Accept': 'application/json',
+			'Content-Type': 'application/json',
+			}
+
 		# Make sure we can make a REST call
 		if not self.base_url_for_rest:
 			self._set_url()
@@ -165,19 +169,19 @@ class Manager(object):
 				if v: qs[k] = v
 			full_url += '?%s' % urllib.urlencode(qs)
 			try:
-				result = requests.get(full_url, headers={"content-type":"application/json"})
+				result = requests.get(full_url, headers=headers)
 			except Exception, get_err:
 				self.log.error("Failed to get REST call [%s] with query string. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))					
 		elif call.has_key('data') and call['data']:
 			# post
 			try:
-				result = requests.post(full_url, data=json.dumps(call['data']), headers={"content-type":"application/json"})
+				result = requests.post(full_url, data=json.dumps(call['data']), headers=headers)
 			except Exception, post_err:
 				self.log.error("Failed to post REST call [%s]. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))	
 		else:
 			# get
 			try:
-				result = requests.get(full_url, headers={"content-type":"application/json"})
+				result = requests.get(full_url, headers=headers)
 			except Exception, get_err:
 				self.log.error("Failed to get REST call [%s]. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))	
 
@@ -522,6 +526,21 @@ class Manager(object):
 
 			for host_detail in result:
 				self.computer_details[host_detail['ID']] = computer.Computer(host_details=host_detail, manager=self)
+
+	def get_cloud_accounts(self):
+		"""
+		"""
+		call = {
+					'api': 'rest',
+					'method': 'cloudaccounts',
+					'query': {
+						'sID': self.session_id_rest,
+					},
+					'auth': True,
+				}
+		
+		results = self._make_call(call)
+		return results
 
 	# *****************************************************************
 	# Public methods - reflected on Computer object
