@@ -614,6 +614,24 @@ class Manager(object):
 		result = self._make_call(call)
 		# None is returned if the call worked so we have no way of checking
 		# if this worked or didn't
+
+	def assign_policy_to_computers(self, policy_id, host_ids):
+		"""
+		Assign the specified security policy to the specified computers
+		"""
+		# Make sure we have a list for the host_ids
+		if not type(host_ids) == type([]): host_ids = [ host_ids ]
+
+		call = self._get_call_structure()
+		call['method'] = 'securityProfileAssignToHost'
+		call['data'] = {
+							'securityProfileID': policy_id,
+							'sID': self.session_id_soap,
+							'hostIDs': host_ids,
+						}
+		result = self._make_call(call)
+		# None is returned if the call worked so we have no way of checking
+		# if this worked or didn't
 		
 	# *****************************************************************
 	# Public methods - charge back API

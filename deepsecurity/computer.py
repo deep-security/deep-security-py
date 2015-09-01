@@ -15,6 +15,7 @@ class Computer(object):
 		top level properties
 		"""
 		for key, prop in {
+			'ID': 'id',
 			'name': 'hostname',
 			'description': 'description',
 			'displayName': 'display_name',
@@ -96,7 +97,17 @@ class Computer(object):
 
 		self.manager.scan_computers_for_recommendations(host_ids=self.data['ID'])
 		# None is returned if the call worked so we have no way of checking
-		# if this worked or didn't				
+		# if this worked or didn't	
+
+	def assign_policy(self, policy_id):
+		"""
+		Assign a security policy to the computer
+		"""
+		if not self.manager: return None
+
+		self.manager.assign_policy_to_computers(policy_id=policy_id, host_ids=self.data['ID'])
+		# None is returned if the call worked so we have no way of checking
+		# if this worked or didn't
 
 	def print_details(self):
 		"""
