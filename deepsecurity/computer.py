@@ -109,10 +109,13 @@ class Computer(object):
 		# None is returned if the call worked so we have no way of checking
 		# if this worked or didn't
 
-	def print_details(self):
+	def __str__(self):
 		"""
-		Print the details of this computer
+		Return a better string representation
 		"""
-		for p in dir(self):
-			if type(getattr(self, p)) == type(""):
-				print '{}\t{}'.format(p, getattr(self, p))
+		if 'cloud_instance_id' in dir(self) and 'hostname' in dir(self):
+			return '{} <{}>'.format(self.hostname, self.cloud_instance_id)
+		elif 'hostname' in dir(self):
+			return self.hostname
+		else:
+			return "Computer [{}]".format(self.data['ID'])
