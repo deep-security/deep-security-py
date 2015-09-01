@@ -361,7 +361,7 @@ class Manager(object):
 		self.session_id_soap = None
 		self.session_id_rest = None
 
-	def cache_info_locally(self):
+	def get_all(self):
 		"""
 		Cache the information about computers, groups, and policies locally
 		"""
@@ -452,11 +452,11 @@ class Manager(object):
 			'auth': True,
 		}
 		
-		result = self._make_call(call)
-		if result:
+		results = self._make_call(call)
+		if results:
 			if not self.computers: self.computers = {}
-			for computer in result:
-				self.computers[computer['ID']] = computer
+			for result in results:
+				self.computers[result['ID']] = computer.Computer(result, manager=self)
 
 	def get_computers_with_details(self, detail_level='HIGH'):
 		"""
@@ -487,11 +487,11 @@ class Manager(object):
 			'auth': True,
 		}
 		
-		result = self._make_call(call)
-		if result:
+		results = self._make_call(call)
+		if results:
 			if not self.computers: self.computers = {}
-			for computer in result:
-				self.computers[computer['ID']] = computer
+			for result in results:
+				self.computers[result['ID']] = computer.Computer(result, manager=self)
 
 
 	def get_computer_details(self, computer_hostname=None):

@@ -2,6 +2,8 @@
 
 A unified python SDK for the Deep Security APIs
 
+**Work in progess: This SDK is being actively worked on and the current state provides a minimum amount of functionality**
+
 ## History
 
 Deep Security has two APIs that complement each other; one via a SOAP interface (the classic API), and a REST interface (the new API). New functionality is being implemented in the REST interface, classic functionality sits in the SOAP API.
@@ -21,22 +23,22 @@ import deepsecurity
 
 # Create a manager object and authenticate. Usage via the API mirrors the
 # web administration console for permissions
-manager = deepsecurity.manager.Manager()
-manager.start_session(username=user, password=pass, tenant=tenant_name)
+mgr = deepsecurity.manager.Manager()
+mgr.start_session(username=user, password=pass, tenant=tenant_name)
 
 # Is this manager up and running?
-print manager.is_up()
+print mgr.is_up()
 
 # Query the manager for the all policies, groups, and computers
 # !!! This can take a while if you have a high number of computers
 #     protected
-manager.cache_info_locally()
+mgr.get_all()
 
 # Print out a quick status of what Deep Security is aware of
 print 'ID\tName\tAWS Instance ID\tPlatform\tDeep Security Status\tDeep Security Group'
-for computer_id, details in manager.computers.items():
+for comp_id, details in mgr.computers.items():
 	print '{}\t{}\t{}\t{}\t{}'.format(
-		computer_id, 
+		comp_id, 
 		details.name, 
 		details.cloudObjectInstanceId, 
 		details.platform,
@@ -44,5 +46,9 @@ for computer_id, details in manager.computers.items():
 		details.hostGroupName,
 		)
 
-manager.finish_session()
+# Ask all of the current computers to recommend their own security policies
+for id, comp in mgr.computers.items():
+	comp.scan_for_recommendations()
+
+mgr.finish_session()
 ```
