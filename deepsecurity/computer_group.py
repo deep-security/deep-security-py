@@ -2,15 +2,9 @@ class ComputerGroup:
 	"""
 	Represents a Deep Security computer group
 	"""
-	def __init__(self, group_details, log):
-		self.log = log
-		self.id = None
-		self.description = None
-		self.name = None
-		self.is_external = False
-		self.external_id = None
-		self.parent_id = None
-
+	def __init__(self, group_details, manager=None):
+		self.manager = manager
+		self.data = group_details
 		self._parse_details(group_details)
 
 	def __str__(self):

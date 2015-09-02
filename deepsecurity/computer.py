@@ -1,9 +1,7 @@
 class Computer(object):
 	def __init__(self, host_details, manager=None):
-		self.data = host_details
 		self.manager = manager
-
-		# Setup functions
+		self.data = host_details
 		self._process_host_detail(host_details)
 
 	# *****************************************************************
@@ -39,12 +37,12 @@ class Computer(object):
 			try:
 				setattr(self, prop, host_details[key])
 			except Exception, err:
-				if self.manager: self.manager.log("Could not add property [%s] to computer [%s]. Threw exception: %s" % (prop, host_details['name'], err))
+				if self.manager: self.manager.log.warning("Could not add property [%s] to computer [%s]. Threw exception: %s" % (prop, host_details['name'], err))
 
 		try:
 			self.number_of_interfaces = len(host_details['hostInterfaces'])
 		except Exception, err:
-			if self.manager: self.manager.log("Could not add property [number_of_interfaces] to computer [%s]. Threw exception: %s" % (host_details['name'], err))
+			if self.manager: self.manager.log.warning("Could not add property [number_of_interfaces] to computer [%s]. Threw exception: %s" % (host_details['name'], err))
 
 	# *****************************************************************
 	# Public methods

@@ -2,33 +2,9 @@ class Policy:
 	"""
 	Represents a Deep Security security policy
 	"""
-	def __init__(self, policy_details, log):
-		self.log = log
-
-		self.id = None
-		self.description = None
-		self.name = None
-		self.intrusion_prevention_state = None
-		self.intrusion_prevention_rules = []
-		self.anti_malware_manual_schedule = None
-		self.anti_malware_manual_is_inherited = False
-		self.anti_malware_realtime_id = None
-		self.anti_malware_realtime_schedule = None
-		self.anti_malware_is_inherited = False
-		self.anti_malware_schedule = None
-		self.anti_malware_state = None
-		self.application_types = []
-		self.firewall_rules = []
-		self.firewall_state = None
-		self.integrity_rules = []
-		self.integrity_state = None
-		self.log_inspection_rules = []
-		self.log_inspection_state = None
-		self.parent_id = None
-		self.recommendation_state = None
-		self.schedule = None
-		self.stateful_configuration = None
-
+	def __init__(self, policy_details, manager=None):
+		self.manager = manager
+		self.data = policy_details
 		self._parse_details(policy_details)
 
 	def __str__(self):

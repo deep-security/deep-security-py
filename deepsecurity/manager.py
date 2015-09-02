@@ -111,6 +111,25 @@ class Manager(object):
 
 		return logger
 
+	def _get_call_structure(self, api='soap'):
+		"""
+		Return the default call structure.
+		call = {
+			'api': 'rest' or 'soap',
+			'method': 'url_fragment' or 'name of soap method',
+			'auth': True auth is required, False it isn't,
+			'data': dict to post or use as kwargs for soap method,
+			'query': dict to use as a query string for rest methods,
+		}
+		"""
+		return {
+			'api': api, # 'rest' also valid
+			'auth': True,
+			'method': None,
+			'query': None,
+			'data': None,
+			}
+
 	def _get_soap_client(self, force_load_from_url=False):
 		"""
 		Create a suds SOAP client based on the DSM WSDL
@@ -264,7 +283,7 @@ class Manager(object):
 		return result
 
 	# *****************************************************************
-	# Public methods
+	# Public methods - API session management
 	# *****************************************************************
 	def start_session(self, username=None, password=None, tenant=None, force_new_session=False):
 		"""
@@ -336,6 +355,8 @@ class Manager(object):
 		elif self.session_id_rest:
 			self.log.info("Continuing with REST session [%s]" % self.session_id_rest)
 
+		return (self.session_id_rest, self.session_id_soap)
+
 	def finish_session(self):
 		"""
 		Terminate an existing session
@@ -362,17 +383,16 @@ class Manager(object):
 			result = self._make_call(rest_call)
 			self.log.info("Terminated sessions [%s] & [%s]" % (self.session_id_soap, self.session_id_rest))
 	
+		old_session_id_soap = self.session_id_soap
+		old_session_id_rest = self.session_id_rest
 		self.session_id_soap = None
 		self.session_id_rest = None
 
-	def get_all(self):
-		"""
-		Cache the information about computers, groups, and policies locally
-		"""
-		self.get_computers_with_details()
-		self.get_computer_groups()
-		self.get_policies()
-		
+		return ('-{}'.format(old_session_id_rest), '-{}'.format(old_session_id_soap))
+
+	# *****************************************************************
+	# Public methods - API session management
+	# *****************************************************************
 	def is_up(self, full_check=False):
 		"""
 		Ping the DSM to see if it's up and responding to requests. Use the
@@ -387,8 +407,8 @@ class Manager(object):
 				'method': 'status/manager/ping',
 				'auth': False,
 			}
-			result = self._make_call(call)
-			if result.status_code == requests.codes.ok:
+			results = self._make_call(call)
+			if results.status_code == requests.codes.ok:
 				return True
 			else:
 				return False
@@ -396,14 +416,27 @@ class Manager(object):
 			# just ping the REST API's front door
 			full_url = self.base_url_for_rest
 			try:
-				result = requests.get(full_url, headers={"content-type":"application/json"})
-				if result.status_code == 200 or result.status_code == 404:
+				results = requests.get(full_url, headers={"content-type":"application/json"})
+				if results.status_code == 200 or results.status_code == 404:
 					return True
 				else:
 					return False
 			except Exception, get_err:
-				print post_err # TODO: write to stderr
+				self.log.error("Could not ping {}. Threw exception: {}".format(full_url,  get_err))
 				return False
+
+	def get_all(self):
+		"""
+		Get all of the information from Deep Security:
+		   - computer groups
+		   - computers
+		   - policies
+		   - cloud accounts
+		"""
+		self.get_computer_groups()
+		self.get_computers_with_details()
+		self.get_policies()
+		self.get_cloud_accounts()
 
 	def get_computer_groups(self):
 		"""
@@ -418,11 +451,11 @@ class Manager(object):
 			'auth': True,
 		}
 		
-		result = self._make_call(call)
-		if result:
+		results = self._make_call(call)
+		if results:
 			if not self.computer_groups: self.computer_groups = {}
-			for group in result:
-				self.computer_groups[group['ID']] = group
+			for group in results:
+				self.computer_groups[group['ID']] = computer_group.ComputerGroup(group, manager=self)
 
 	def get_policies(self):
 		"""
@@ -437,11 +470,11 @@ class Manager(object):
 			'auth': True,
 		}
 		
-		result = self._make_call(call)
-		if result:
+		results = self._make_call(call)
+		if results:
 			if not self.policies: self.policies = {}
-			for policy in result:
-				self.policies[policy['ID']] = policy
+			for policy in results:
+				self.policies[policy['ID']] = policy.Policy(policy, manager=self)
 
 	def get_computers(self):
 		"""
@@ -497,7 +530,6 @@ class Manager(object):
 			for result in results:
 				self.computers[result['ID']] = computer.Computer(result, manager=self)
 
-
 	def get_computer_details(self, computer_hostname=None):
 		"""
 		Get details on a specific computer managed by Deep Security
@@ -542,7 +574,7 @@ class Manager(object):
 
 		return self.cloud_accounts
 
-	def get_aws_account(self): return self.get_cloud_accounts()
+	def get_aws_accounts(self): return self.get_cloud_accounts()
 
 	def add_aws_account(self, name, access_key, secret_key, region="all"):
 		"""
@@ -574,8 +606,6 @@ class Manager(object):
 			'auth': True,
 		}
 
-		print call
-
 		if region == "all":
 			for name, region_id in regions.items():
 				call['data']['cloudRegion'] = region_id
@@ -587,9 +617,6 @@ class Manager(object):
 
 		return results
 
-	# *****************************************************************
-	# Public methods - reflected on Computer object
-	# *****************************************************************
 	def request_events_from_computer(self, host_id):
 		"""
 		Ask the computer to send the latest events it's seen to the DSM
@@ -703,9 +730,6 @@ class Manager(object):
 		# None is returned if the call worked so we have no way of checking
 		# if this worked or didn't
 		
-	# *****************************************************************
-	# Public methods - charge back API
-	# *****************************************************************		
 	def get_computer_protection_information(self, tenant=None, from_timestamp=None, to_timestamp=None):
 		"""
 		Request the number of protection hours used by the specified tenant.

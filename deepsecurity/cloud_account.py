@@ -2,16 +2,9 @@ class CloudAccount:
 	"""
 	Represents a Deep Security cloud connection
 	"""
-	def __init__(self, cloud_account_details, log):
-		self.log = log
-		self.id = None
-		self.description = None
-		self.real_time_sync = None
-		self.cloud_region = False
-		self.last_sync = None
-		self.cloudType = None
-		self.name = None
-
+	def __init__(self, cloud_account_details, manager=None):
+		self.manager = manager
+		self.data = cloud_account_details
 		self._parse_details(cloud_account_details)
 
 	def __str__(self):
