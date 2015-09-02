@@ -286,6 +286,9 @@ class Manager(object):
 
 		return result
 
+	def _search_in_dict(self, search_for, in_dict):
+		pass
+
 	# *****************************************************************
 	# Public methods - API session management
 	# *****************************************************************

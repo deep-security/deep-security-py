@@ -23,8 +23,7 @@ import deepsecurity
 
 # Create a manager object and authenticate. Usage via the API mirrors the
 # web administration console for permissions
-mgr = deepsecurity.manager.Manager()
-mgr.start_session(username=user, password=pwd, tenant=tenant_name)
+mgr = deepsecurity.manager.Manager(username=user, password=pwd, tenant=tenant_name)
 
 # Is this manager up and running?
 print mgr.is_up()
