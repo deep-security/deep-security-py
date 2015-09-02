@@ -13,7 +13,10 @@ import requests
 import suds
 
 # Project libraries
+import cloud_account
 import computer
+import computer_group
+import policy
 
 class Manager(object):
 	"""
@@ -110,13 +113,13 @@ class Manager(object):
 
 	def _get_soap_client(self, force_load_from_url=False):
 		"""
-		Create a suds soap client based on the DSM WSDL
+		Create a suds SOAP client based on the DSM WSDL
 		"""
 		soap_client = None
 
 		# First, try to use a local WSDL
-		current_path = os.path.realpath(os.path.dirname(inspect.getfile(inspect.currentframe())))
 		wsdl_path = None
+		current_path = os.path.realpath(os.path.dirname(inspect.getfile(inspect.currentframe())))
 		found_wsdl = []
 		for fn in os.listdir(current_path):
 			if fn.endswith('.wsdl.xml'): found_wsdl.append(os.path.join(current_path, fn))
@@ -124,7 +127,10 @@ class Manager(object):
 		found_wsdl.sort()
 
 		if len(found_wsdl) > 0:
-			wsdl_path = 'file://%s' % found_wsdl[0]
+			if 'deepsecurity.latest.wsdl.xml' in found_wsdl:
+				wsdl_path = 'file://deepsecurity.latest.wsdl.xml'
+			else:
+				wsdl_path = 'file://{}'.format(found_wsdl[0])
 
 		if not wsdl_path or force_load_from_url: wsdl_path = self.base_url_for_soap
 
@@ -144,7 +150,7 @@ class Manager(object):
 							'base_url_for_rest': self.rest_api_path,
 							'base_url_for_soap': self.soap_api_wsdl,
 							}.items():
-			url = 'https://%s:%s/%s' % (self.hostname, self.port, end_fragment)
+			url = 'https://{}:{}/{}'.format(self.hostname, self.port, end_fragment)
 			setattr(self, api, url)
 
 		# Update the SOAP client just in case we're dealing with a new WSDL
@@ -183,18 +189,19 @@ class Manager(object):
 
 		# Make the call
 		if call.has_key('query') and call['query'] and not call.has_key('data'):
+			# GET
 			try:
 				result = requests.get(full_url, headers=headers)
 			except Exception, get_err:
 				self.log.error("Failed to get REST call [%s] with query string. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))					
 		elif call.has_key('data') and call['data']:
-			# post
+			# POST
 			try:
 				result = requests.post(full_url, data=json.dumps(call['data']), headers=headers)
 			except Exception, post_err:
 				self.log.error("Failed to post REST call [%s]. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))	
 		else:
-			# get
+			# default to GET
 			try:
 				result = requests.get(full_url, headers=headers)
 			except Exception, get_err:
@@ -229,6 +236,15 @@ class Manager(object):
 	def _make_call(self, call):
 		"""
 		Make an API call to either the SOAP or REST API
+
+		Default 'call' structure:
+			call = {
+				'api': 'rest' or 'soap',
+				'method': 'url_fragment' or 'name of soap method',
+				'auth': True auth is required, False it isn't,
+				'data': dict to post or use as kwargs for soap method,
+				'query': dict to use as a query string for rest methods,
+			}
 		"""
 		result = None
 
@@ -246,43 +262,6 @@ class Manager(object):
 			result = getattr(self, '_make_a_%s_call' % call_details['api'])(call_details)
 
 		return result
-
-	def _get_call_structure(self, api='soap'):
-		"""
-		Return the default call structure.
-
-		call = {
-			'api': 'rest' or 'soap',
-			'method': 'url_fragment' or 'name of soap method',
-			'auth': True auth is required, False it isn't,
-			'data': dict to post or use as kwargs for soap method,
-			'query': dict to use as a query string for rest methods,
-		}
-		"""
-		return {
-			'api': api, # 'rest' also valid
-			'auth': True,
-			'method': None,
-			'query': None,
-			'data': None,
-		}
-
-	def _parse_rest_response(self, result):
-		"""
-		Parse the XML response from the REST API.
-
-		The Deep Security REST API currently (build 5364) has a bug that
-		returns all responses from the REST API as XML regardless of request
-		format. We'll parse them here in order to make it easier to fix down the 
-		road.
-		"""
-		data = None
-		try:
-			data = ET.fromstring(result.text)
-		except Exception, err:
-			self.log.error("Could not parse XML response from REST API. Threw exception: %s" % err)
-
-		return data
 
 	# *****************************************************************
 	# Public methods
