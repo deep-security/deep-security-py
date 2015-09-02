@@ -34,6 +34,14 @@ print mgr.is_up()
 #     protected
 mgr.get_all()
 
+# Add a new AWS account to sync with
+#    The IAM identity for the access/secret key needs:
+#       - ec2::describeInstances
+#       - ec2::describeImages
+#       - ec2::describeTags
+mgr.add_aws_account(name="Prod AWS Account", access_key=access_key, secret_key=secret_key) # all regions
+mgr.add_aws_account(name="Dev AWS Account", access_key=access_key, secret_key=secret_key, region='us-east-1')
+
 # Print out a quick status of what Deep Security is aware of
 print 'ID\tName\tAWS Instance ID\tPlatform\tDeep Security Status\tDeep Security Policy'
 for comp_id, details in mgr.computers.items():
