@@ -42,6 +42,14 @@ class Manager(object):
 		self.log = self._setup_logging()
 		self._set_url()
 
+	def __del__(self):
+		"""
+		Try to gracefully clean up the session
+		"""
+		try:
+			self.finish_session()
+		except Exception, err: pass
+
 	def __str__(self):
 		"""
 		Return a better string representation
@@ -165,13 +173,16 @@ class Manager(object):
 		# Get the full URL of the REST API call
 		full_url = '%s/%s' % (self.base_url_for_rest, call['method'].lstrip('/'))
 
-		# Make the call
+		# Prep the query string
 		if call.has_key('query') and call['query']:
 			# get with query string
 			qs = {}
 			for k, v in call['query'].items(): # strip out null entries
 				if v: qs[k] = v
 			full_url += '?%s' % urllib.urlencode(qs)
+
+		# Make the call
+		if call.has_key('query') and call['query'] and not call.has_key('data'):
 			try:
 				result = requests.get(full_url, headers=headers)
 			except Exception, get_err:
@@ -551,6 +562,51 @@ class Manager(object):
 				self.cloud_accounts = results_doc['cloudAccountListing']
 
 		return self.cloud_accounts
+
+	def get_aws_account(self): return self.get_cloud_accounts()
+
+	def add_aws_account(self, name, access_key, secret_key, region="all"):
+		"""
+		Add a cloud account to synchronize inventory with a cloud service provider
+		"""
+		regions = {
+			'us-east-1': 'amazon.cloud.region.key.1',
+			'us-west-1': 'amazon.cloud.region.key.2',
+			'us-west-2': 'amazon.cloud.region.key.3',
+			'eu-west-1': 'amazon.cloud.region.key.4',
+			'ap-southeast-1': 'amazon.cloud.region.key.5',
+			'ap-northeast-1': 'amazon.cloud.region.key.6',
+			'sa-east-1': 'amazon.cloud.region.key.7',
+		}
+
+		call = {
+			'api': 'rest',
+			'method': 'cloudaccounts',
+			'query': {
+						'sID': self.session_id_rest,
+					},
+			'data': {
+				'accessKey': access_key,
+				'secretKey': secret_key,
+				'cloudType': 'AMAZON',
+				'name': name,
+				'cloudRegion': regions[region]
+				},
+			'auth': True,
+		}
+
+		print call
+
+		if region == "all":
+			for name, region_id in regions.items():
+				call['data']['cloudRegion'] = region_id
+				results = self._make_call(call)
+				print results
+		else:
+			results = self._make_call(call)
+			print results
+
+		return results
 
 	# *****************************************************************
 	# Public methods - reflected on Computer object
