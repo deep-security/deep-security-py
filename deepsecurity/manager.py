@@ -206,8 +206,6 @@ class Manager(object):
 				if v: qs[k] = v
 			full_url += '?%s' % urllib.urlencode(qs)
 
-		print full_url
-
 		# Make the call
 		if call.has_key('query') and call['query'] and not call.has_key('data'):
 			# GET
@@ -218,7 +216,6 @@ class Manager(object):
 		elif call.has_key('data') and call['data']:
 			# POST
 			try:
-				print json.dumps(call['data'])
 				result = requests.post(full_url, data=json.dumps(call['data']), headers=headers)
 			except Exception, post_err:
 				self.log.error("Failed to post REST call [%s]. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))	
