@@ -178,7 +178,7 @@ class Manager(object):
 	def _make_a_rest_call(self, call):
 		"""
 		Make a call to the Deep Security REST API and return the result.
-		Returns 'None' and logs to stderr if there were any issues 
+		Returns 'None' and logs if there were any issues 
 		"""
 		result = None
 
@@ -206,6 +206,8 @@ class Manager(object):
 				if v: qs[k] = v
 			full_url += '?%s' % urllib.urlencode(qs)
 
+		print full_url
+
 		# Make the call
 		if call.has_key('query') and call['query'] and not call.has_key('data'):
 			# GET
@@ -216,6 +218,7 @@ class Manager(object):
 		elif call.has_key('data') and call['data']:
 			# POST
 			try:
+				print json.dumps(call['data'])
 				result = requests.post(full_url, data=json.dumps(call['data']), headers=headers)
 			except Exception, post_err:
 				self.log.error("Failed to post REST call [%s]. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))	
@@ -473,8 +476,8 @@ class Manager(object):
 		results = self._make_call(call)
 		if results:
 			if not self.policies: self.policies = {}
-			for policy in results:
-				self.policies[policy['ID']] = policy.Policy(policy, manager=self)
+			for result in results:
+				self.policies[result['ID']] = policy.Policy(result, manager=self)
 
 	def get_computers(self):
 		"""
@@ -593,29 +596,46 @@ class Manager(object):
 		call = {
 			'api': 'rest',
 			'method': 'cloudaccounts',
-			'query': {
-						'sID': self.session_id_rest,
-					},
 			'data': {
-				'accessKey': access_key,
-				'secretKey': secret_key,
-				'cloudType': 'AMAZON',
-				'name': name,
-				'cloudRegion': regions[region]
+				'createCloudAccountRequest': {
+					'sessionId': self.session_id_rest,
+					'cloudAccountElement': {
+						'accessKey': access_key,
+						'secretKey': secret_key,
+						'cloudType': 'AMAZON',
+						'name': name,
+						'cloudRegion': regions[region] if not region == "all" else ""
+					}
+				}
+				
 				},
 			'auth': True,
 		}
 
+		results_by_region = {}
+
 		if region == "all":
-			for name, region_id in regions.items():
-				call['data']['cloudRegion'] = region_id
+			for region_name, region_id in regions.items():
+				call['data']['createCloudAccountRequest']['cloudAccountElement']['name'] = '{} / {}'.format(name, region_name)
+				call['data']['createCloudAccountRequest']['cloudAccountElement']['cloudRegion'] = region_id
 				results = self._make_call(call)
-				print results
+				if "Cloud Account Region/Partition already present" in results.text:
+					results_by_region[region_name] = False
+				elif results.ok:
+					results_by_region[region_name] = True
+				else:
+					results_by_region[region_name] = results
 		else:
 			results = self._make_call(call)
-			print results
 
-		return results
+			if "Cloud Account Region/Partition already present" in results.text:
+				results_by_region[region] = False
+			elif results.ok:
+				results_by_region[region] = True
+			else:
+				results_by_region[region] = results
+
+		return results_by_region
 
 	def request_events_from_computer(self, host_id):
 		"""
