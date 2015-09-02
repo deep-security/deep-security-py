@@ -35,15 +35,15 @@ print mgr.is_up()
 mgr.get_all()
 
 # Print out a quick status of what Deep Security is aware of
-print 'ID\tName\tAWS Instance ID\tPlatform\tDeep Security Status\tDeep Security Group'
+print 'ID\tName\tAWS Instance ID\tPlatform\tDeep Security Status\tDeep Security Policy'
 for comp_id, details in mgr.computers.items():
 	print '{}\t{}\t{}\t{}\t{}'.format(
 		comp_id, 
 		details.hostname, 
-		details.cloudObjectInstanceId, 
+		details.cloud_instance_id, 
 		details.platform,
-		details.overallStatus,
-		details.hostGroupName,
+		details.status_light,
+		details.policy_name,
 		)
 
 # Ask all of the current computers to recommend their own security policies
