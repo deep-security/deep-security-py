@@ -2,7 +2,7 @@
 
 A unified python SDK for the Deep Security APIs
 
-**Work in progess: This SDK is being actively worked on and the current state provides a minimum amount of functionality**
+**Work in progress: This SDK is being actively worked on and the current state provides a minimum amount of functionality. Please send a PR if there's something you need ASAP. We'll open up to wider contributions soon**
 
 ## History
 
