@@ -24,7 +24,7 @@ import deepsecurity
 # Create a manager object and authenticate. Usage via the API mirrors the
 # web administration console for permissions
 mgr = deepsecurity.manager.Manager()
-mgr.start_session(username=user, password=pass, tenant=tenant_name)
+mgr.start_session(username=user, password=pwd, tenant=tenant_name)
 
 # Is this manager up and running?
 print mgr.is_up()
@@ -39,7 +39,7 @@ print 'ID\tName\tAWS Instance ID\tPlatform\tDeep Security Status\tDeep Security 
 for comp_id, details in mgr.computers.items():
 	print '{}\t{}\t{}\t{}\t{}'.format(
 		comp_id, 
-		details.name, 
+		details.hostname, 
 		details.cloudObjectInstanceId, 
 		details.platform,
 		details.overallStatus,
