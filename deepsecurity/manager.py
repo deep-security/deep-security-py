@@ -24,7 +24,7 @@ class Manager(object):
 	functionality. Well, at least the functionality available via the 
 	SOAP and REST APIs
 	"""
-	def __init__(self):
+	def __init__(self, username=None, password=None, tenant=None):
 		self.version = '9.6'
 		self._hostname = 'app.deepsecurity.trendmicro.com' # default to Deep Security as a Service
 		self._port = 443 # on-premise defaults to 4119
@@ -44,6 +44,10 @@ class Manager(object):
 		# Setup functions
 		self.log = self._setup_logging()
 		self._set_url()
+
+		# Try to start a session if possible
+		if username and password:
+			self.start_session(username=username, password=password, tenant=tenant)
 
 	def __del__(self):
 		"""
@@ -389,6 +393,8 @@ class Manager(object):
 		self.session_id_rest = None
 
 		return ('-{}'.format(old_session_id_rest), '-{}'.format(old_session_id_soap))
+
+	def close(self): self.finish_session()
 
 	# *****************************************************************
 	# Public methods - API session management
