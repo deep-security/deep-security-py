@@ -60,7 +60,7 @@ for id, comp in mgr.computers.items():
 # Apply a policy to set of computers
 policy_to_apply = mgr.find_policies('MongoDB')
 comp_ids = mgr.find_computers('ami-0d4cfd66', by_attr='cloud_image_id')
-mgr.assign_policy_to_computers(policy_to_apply[0].id, comp_ids)
+mgr.assign_policy_to_computers(policy_to_apply[0], comp_ids)
 
 # Old school but key. API access is the same as a user logging in. If you are going to
 # start a large number of session, you'll need to finish each of them to avoid
