@@ -64,6 +64,6 @@ mgr.assign_policy_to_computers(policy_to_apply[0], comp_ids)
 
 # Old school but key. API access is the same as a user logging in. If you are going to
 # start a large number of session, you'll need to finish each of them to avoid
-# exception being thrown
+# exception being thrown. This function is also called automatically with the object's destructor
 mgr.finish_session()
 ```
