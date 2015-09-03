@@ -57,6 +57,10 @@ for comp_id, details in mgr.computers.items():
 for id, comp in mgr.computers.items():
 	comp.scan_for_recommendations()
 
+# Apply a policy to set of computers
+policy_to_apply = mgr.find_policies('MongoDB')
+comp_ids = mgr.find_computers('')
+
 # Old school but key. API access is the same as a user logging in. If you are going to
 # start a large number of session, you'll need to finish each of them to avoid
 # exception being thrown
