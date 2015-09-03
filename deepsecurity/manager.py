@@ -287,7 +287,28 @@ class Manager(object):
 		return result
 
 	def _search_in_dict(self, search_for, in_dict):
-		pass
+		d = None
+		try:
+			if in_dict in dir(self):
+				d = getattr(self, in_dict)
+		except Exception, err:
+			self.log.error("Could not find [{}] to search for [{}]".format(in_dict, search_for))
+
+		results = []
+		if d:
+			for k, v in d.items():
+				for attr_name in [
+					'name',
+					'hostname',
+					'display_name',
+					'description',
+					]:
+					if attr_name in dir(v):
+						if search_for in getattr(v, attr_name):
+							results.append(k)
+							break # out of the inner loop
+
+		return results
 
 	# *****************************************************************
 	# Public methods - API session management
@@ -400,8 +421,13 @@ class Manager(object):
 	def close(self): self.finish_session()
 
 	# *****************************************************************
-	# Public methods - API session management
+	# Public methods - manager basics
 	# *****************************************************************
+	def find_computers(self, with_name): return self._search_in_dict(with_name, self.computers)
+	def find_policies(self, with_name): return self._search_in_dict(with_name, self.policies)
+	def find_computer_groupss(self, with_name): return self._search_in_dict(with_name, self.computer_groups)
+	def find_cloud_accounts(self, with_name): return self._search_in_dict(with_name, self.cloud_accounts)
+
 	def is_up(self, full_check=False):
 		"""
 		Ping the DSM to see if it's up and responding to requests. Use the
