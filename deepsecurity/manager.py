@@ -290,6 +290,8 @@ class Manager(object):
 		"""
 		Search through a dict collection to find a matching object
 		"""
+		search_for = search_for.lower()
+
 		d = None
 		try:
 			if in_dict in dir(self):
@@ -307,7 +309,8 @@ class Manager(object):
 					'description',
 					]:
 					if attr_name in dir(v):
-						if search_for in getattr(v, attr_name):
+						comparison = "{}".format(getattr(v, attr_name)).lower()
+						if search_for in comparison:
 							results.append(k)
 							break # out of the inner loop
 
