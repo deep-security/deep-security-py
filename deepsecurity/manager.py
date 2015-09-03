@@ -287,6 +287,9 @@ class Manager(object):
 		return result
 
 	def _search_in_dict(self, search_for, in_dict):
+		"""
+		Search through a dict collection to find a matching object
+		"""
 		d = None
 		try:
 			if in_dict in dir(self):
@@ -423,10 +426,10 @@ class Manager(object):
 	# *****************************************************************
 	# Public methods - manager basics
 	# *****************************************************************
-	def find_computers(self, with_name): return self._search_in_dict(with_name, self.computers)
-	def find_policies(self, with_name): return self._search_in_dict(with_name, self.policies)
-	def find_computer_groupss(self, with_name): return self._search_in_dict(with_name, self.computer_groups)
-	def find_cloud_accounts(self, with_name): return self._search_in_dict(with_name, self.cloud_accounts)
+	def find_computers(self, with_name): return self._search_in_dict(with_name, 'computers')
+	def find_policies(self, with_name): return self._search_in_dict(with_name, 'policies')
+	def find_computer_groupss(self, with_name): return self._search_in_dict(with_name, 'computer_groups')
+	def find_cloud_accounts(self, with_name): return self._search_in_dict(with_name, 'cloud_accounts')
 
 	def is_up(self, full_check=False):
 		"""
