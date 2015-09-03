@@ -286,7 +286,7 @@ class Manager(object):
 
 		return result
 
-	def _search_in_dict(self, search_for, in_dict, by_attr=None):
+	def _search_in_dict(self, search_for, in_dict, by_attribute=None):
 		"""
 		Search through a dict collection to find a matching object
 		"""
@@ -302,12 +302,11 @@ class Manager(object):
 		results = []
 		if d:
 			for k, v in d.items():
-				if by_attr:
-					if by_attr in dir(v):
-						comparison = "{}".format(getattr(v, by_attr)).lower()
-							if search_for in comparison:
-								results.append(k)
-								break # out of the inner loop
+				if by_attribute:
+					if by_attribute in dir(v):
+						comparison = "{}".format(getattr(v, by_attribute)).lower()
+						if search_for in comparison:
+							results.append(k)
 				else:
 					for attr_name in [
 						'name',
@@ -436,10 +435,10 @@ class Manager(object):
 	# *****************************************************************
 	# Public methods - manager basics
 	# *****************************************************************
-	def find_computers(self, with_name, by_attribute=None): return self._search_in_dict(with_name, 'computers', by_attr=by_attr)
-	def find_policies(self, with_name, by_attribute=None): return self._search_in_dict(with_name, 'policies', by_attr=by_attr)
-	def find_computer_groupss(self, with_name, by_attribute=None): return self._search_in_dict(with_name, 'computer_groups', by_attr=by_attr)
-	def find_cloud_accounts(self, with_name, by_attribute=None): return self._search_in_dict(with_name, 'cloud_accounts', by_attr=by_attr)
+	def find_computers(self, with_name, by_attribute=None): return self._search_in_dict(with_name, 'computers', by_attribute=by_attribute)
+	def find_policies(self, with_name, by_attribute=None): return self._search_in_dict(with_name, 'policies', by_attribute=by_attribute)
+	def find_computer_groupss(self, with_name, by_attribute=None): return self._search_in_dict(with_name, 'computer_groups', by_attribute=by_attribute)
+	def find_cloud_accounts(self, with_name, by_attribute=None): return self._search_in_dict(with_name, 'cloud_accounts', by_attribute=by_attribute)
 
 	def is_up(self, full_check=False):
 		"""
