@@ -487,11 +487,13 @@ class Manager(object):
 		   - computers
 		   - policies
 		   - cloud accounts
+		   - ip lists
 		"""
 		self.get_computer_groups()
 		self.get_computers_with_details()
 		self.get_policies()
 		self.get_cloud_accounts()
+		self.get_ip_lists()
 
 	def get_computer_groups(self):
 		"""
