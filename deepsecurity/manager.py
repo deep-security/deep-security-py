@@ -16,6 +16,7 @@ import suds
 import cloud_account
 import computer
 import computer_group
+import ip_list
 import policy
 
 class Manager(object):
@@ -40,9 +41,10 @@ class Manager(object):
 		self.computers = {}
 		self.computer_details = {}
 		self.cloud_accounts = {}
+		self.ip_lists = {}
 
 		# Setup functions
-		self.log = self._setup_logging()
+		self.logger = self._setup_logging()
 		self._set_url()
 
 		# Try to start a session if possible
@@ -325,6 +327,12 @@ class Manager(object):
 	# *****************************************************************
 	# Public methods - API session management
 	# *****************************************************************
+	def log(self, message, level="info"):
+		"""
+		Log the specified message
+		"""
+		self.logger.info(message)
+
 	def start_session(self, username=None, password=None, tenant=None, force_new_session=False):
 		"""
 		Authenticate to the REST and SOAP APIs and start a new session for each
@@ -378,22 +386,22 @@ class Manager(object):
 			if soap_call: self.session_id_soap = self._make_call(soap_call)
 
 			if self.session_id_soap:
-				self.log.info("Authenticated successfully, starting SOAP session [%s]" % self.session_id_soap)
+				self.log("Authenticated successfully, starting SOAP session [%s]" % self.session_id_soap)
 			else:
-				self.log.info("Could not start SOAP session")
+				self.log("Could not start SOAP session")
 		elif self.session_id_soap:
-			self.log.info("Continuing with SOAP session [%s]" % self.session_id_soap)
+			self.log("Continuing with SOAP session [%s]" % self.session_id_soap)
 
 		# Do we have an existing REST session?
 		if not self.session_id_rest or force_new_session:
 			if rest_call: self.session_id_rest = (self._make_call(rest_call)).text
 
 			if self.session_id_rest:
-				self.log.info("Authenticated successfully, starting REST session [%s]" % self.session_id_rest)
+				self.log("Authenticated successfully, starting REST session [%s]" % self.session_id_rest)
 			else:
-				self.log.info("Could not start REST session")
+				self.log("Could not start REST session")
 		elif self.session_id_rest:
-			self.log.info("Continuing with REST session [%s]" % self.session_id_rest)
+			self.log("Continuing with REST session [%s]" % self.session_id_rest)
 
 		return (self.session_id_rest, self.session_id_soap)
 
@@ -421,7 +429,7 @@ class Manager(object):
 
 			result = self._make_call(soap_call)
 			result = self._make_call(rest_call)
-			self.log.info("Terminated sessions [%s] & [%s]" % (self.session_id_soap, self.session_id_rest))
+			self.log("Terminated sessions [%s] & [%s]" % (self.session_id_soap, self.session_id_rest))
 	
 		old_session_id_soap = self.session_id_soap
 		old_session_id_rest = self.session_id_rest
@@ -680,6 +688,22 @@ class Manager(object):
 				results_by_region[region] = results
 
 		return results_by_region
+
+	def get_ip_lists(self):
+		"""
+		Get a list of all of the current IP lists in Deep Security
+		"""
+		call = {
+			'api': 'soap',
+			'method': 'IPListRetrieveAll',
+			'data': {
+				'sID': self.session_id_soap,
+			},
+			'auth': True,
+		}
+		result = self._make_call(call)
+		for obj in result:
+			self.ip_lists[obj['ID']] = ip_list.IpList(ip_list_details=obj, manager=self)
 
 	def request_events_from_computer(self, host_id):
 		"""

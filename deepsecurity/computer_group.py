@@ -27,4 +27,4 @@ class ComputerGroup:
 			try:
 				setattr(self, v, getattr(group_details, k))
 			except Exception, err:
-				self.log("Could not set attribute [{}] for ComputerGroup".format(v), exception=err)
+				if self.manager: self.manager.log("Could not set attribute [{}] for ComputerGroup".format(v), exception=err)
