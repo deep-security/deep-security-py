@@ -25,9 +25,9 @@ class Manager(object):
 	functionality. Well, at least the functionality available via the 
 	SOAP and REST APIs
 	"""
-	def __init__(self, username=None, password=None, tenant=None):
+	def __init__(self, username=None, password=None, tenant=None, dsm_hostname=None):
 		self.version = '9.6'
-		self._hostname = 'app.deepsecurity.trendmicro.com' # default to Deep Security as a Service
+		self._hostname = 'app.deepsecurity.trendmicro.com' if not dsm_hostname else dsm_hostname # default to Deep Security as a Service
 		self._port = 443 # on-premise defaults to 4119
 		self.rest_api_path = 'rest'
 		self.soap_api_wsdl = 'webservice/Manager?WSDL'
@@ -103,6 +103,7 @@ class Manager(object):
 		"""
 
 		# Based on tips from http://www.blog.pythonlibrary.org/2012/08/02/python-101-an-intro-to-logging/
+		logging.basicConfig(level=logging.INFO)
 
 		# turn down suds logging
 		logging.getLogger('suds.client').setLevel(logging.ERROR)
