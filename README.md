@@ -22,7 +22,9 @@ pip install -r requirements.txt
 import deepsecurity
 
 # Create a manager object and authenticate. Usage via the API mirrors the
-# web administration console for permissions
+# web administration console for permissions. This defaults to Deep Security
+# as a Service. Use the dsm_hostname="..." argument to specify another
+# Deep Security Manager
 mgr = deepsecurity.manager.Manager(username=user, password=pwd, tenant=tenant_name)
 
 # Is this manager up and running?

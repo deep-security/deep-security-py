@@ -25,7 +25,17 @@ class Manager(object):
 	functionality. Well, at least the functionality available via the 
 	SOAP and REST APIs
 	"""
-	def __init__(self, username=None, password=None, tenant=None, dsm_hostname=None):
+	def __init__(self, username=None, password=None, tenant=None, dsm_hostname=None, start_session=True):
+		"""
+		Create a new reference to a Deep Security Manager
+
+		username = 	str value of the username to authenticate to Deep Security with
+		password = 	The password  for the specified userName
+		tenant = 		In a multi-tenant deployment (like Deep Security as a Service) this is the tenant/account name. 
+								For non-multi tenant accounts this can be left blank or set to "primary"
+		dsm_hostname = The hostname of the Deep Security Manager to access, defaults to Deep Security as a Service
+		start_session = Whether or not to automatically start a session with the specified Deep Security Manager
+		"""
 		self.version = '9.6'
 		self._hostname = 'app.deepsecurity.trendmicro.com' if not dsm_hostname else dsm_hostname # default to Deep Security as a Service
 		self._port = 443 # on-premise defaults to 4119
@@ -44,11 +54,12 @@ class Manager(object):
 		self.ip_lists = {}
 
 		# Setup functions
+		self.debug = False
 		self.logger = self._setup_logging()
 		self._set_url()
 
 		# Try to start a session if possible
-		if username and password:
+		if username and password and start_session:
 			self.start_session(username=username, password=password, tenant=tenant)
 
 	def __del__(self):
@@ -103,14 +114,19 @@ class Manager(object):
 		"""
 
 		# Based on tips from http://www.blog.pythonlibrary.org/2012/08/02/python-101-an-intro-to-logging/
-		logging.basicConfig(level=logging.INFO)
+		logging.basicConfig(level=logging.ERROR)
 
 		# turn down suds logging
 		logging.getLogger('suds.client').setLevel(logging.ERROR)
+		if self.debug:
+			logging.getLogger('suds.client').setLevel(logging.DEBUG)
 
 		# setup module logging
 		logger = logging.getLogger("DeepSecurity.API")
 		logger.setLevel(logging.WARNING)
+		if self.debug:
+			logger.setLevel(logging.DEBUG)
+
 		formatter = logging.Formatter('[%(asctime)s]\t%(message)s', '%Y-%m-%d %H:%M:%S')
 		stream_handler = logging.StreamHandler()
 		stream_handler.setFormatter(formatter)
@@ -163,7 +179,7 @@ class Manager(object):
 		try:
 			soap_client = suds.client.Client(wsdl_path)
 		except Exception, soap_err:
-			self.log.error("Could not create a SOAP client. Threw exception: %s" % soap_err)
+			self.log("Could not create a SOAP client. Threw exception: %s" % soap_err)
 			soap_client = None
 
 		return soap_client
@@ -219,19 +235,19 @@ class Manager(object):
 			try:
 				result = requests.get(full_url, headers=headers)
 			except Exception, get_err:
-				self.log.error("Failed to get REST call [%s] with query string. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))					
+				self.log("Failed to get REST call [%s] with query string. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))					
 		elif call.has_key('data') and call['data']:
 			# POST
 			try:
 				result = requests.post(full_url, data=json.dumps(call['data']), headers=headers)
 			except Exception, post_err:
-				self.log.error("Failed to post REST call [%s]. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))	
+				self.log("Failed to post REST call [%s]. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))	
 		else:
 			# default to GET
 			try:
 				result = requests.get(full_url, headers=headers)
 			except Exception, get_err:
-				self.log.error("Failed to get REST call [%s]. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))	
+				self.log("Failed to get REST call [%s]. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))	
 
 		return result
 
@@ -254,7 +270,7 @@ class Manager(object):
 		try:
 			result = getattr(self.soap_client.service, '%s' % call['method'])(**data)
 		except Exception, soap_err:
-			self.log.error("Failed to make SOAP call [%s]. Threw exception: %s" % (call['method'], soap_err))
+			self.log("Failed to make SOAP call [%s]. Threw exception: %s" % (call['method'], soap_err))
 			result = None
 
 		return result
@@ -281,7 +297,7 @@ class Manager(object):
 		# If the call requires authentication, make sure we have a current session
 		if call_details.has_key('auth') and call_details['auth']:
 			if (call['api'] == 'soap' and not self.session_id_soap) or (call['api'] == 'rest' and not self.session_id_rest): 
-				self.log.error("Could not make %s API call. This call requires a valid session" % call_details['api'].upper())
+				self.log("Could not make %s API call. This call requires a valid session" % call_details['api'].upper())
 				return result
 
 		if call_details['api'] in ['rest', 'soap']:
@@ -300,7 +316,7 @@ class Manager(object):
 			if in_dict in dir(self):
 				d = getattr(self, in_dict)
 		except Exception, err:
-			self.log.error("Could not find [{}] to search for [{}]".format(in_dict, search_for))
+			self.log("Could not find [{}] to search for [{}]".format(in_dict, search_for))
 
 		results = []
 		if d:
@@ -328,11 +344,14 @@ class Manager(object):
 	# *****************************************************************
 	# Public methods - API session management
 	# *****************************************************************
-	def log(self, message, level="info"):
+	def log(self, message, err=None, level="info"):
 		"""
 		Log the specified message
 		"""
-		self.logger.info(message)
+		if err:
+			self.logger.error("{}\nThrew exception:\n\t{}".format(message, err))
+		else:
+			self.logger.info(message)
 
 	def start_session(self, username=None, password=None, tenant=None, force_new_session=False):
 		"""
