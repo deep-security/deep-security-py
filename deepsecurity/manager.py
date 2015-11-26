@@ -16,6 +16,7 @@ import suds
 import cloud_account
 import computer
 import computer_group
+import ip_list
 import policy
 
 class Manager(object):
@@ -24,9 +25,19 @@ class Manager(object):
 	functionality. Well, at least the functionality available via the 
 	SOAP and REST APIs
 	"""
-	def __init__(self, username=None, password=None, tenant=None):
+	def __init__(self, username=None, password=None, tenant=None, dsm_hostname=None, start_session=True):
+		"""
+		Create a new reference to a Deep Security Manager
+
+		username = 	str value of the username to authenticate to Deep Security with
+		password = 	The password  for the specified userName
+		tenant = 		In a multi-tenant deployment (like Deep Security as a Service) this is the tenant/account name. 
+								For non-multi tenant accounts this can be left blank or set to "primary"
+		dsm_hostname = The hostname of the Deep Security Manager to access, defaults to Deep Security as a Service
+		start_session = Whether or not to automatically start a session with the specified Deep Security Manager
+		"""
 		self.version = '9.6'
-		self._hostname = 'app.deepsecurity.trendmicro.com' # default to Deep Security as a Service
+		self._hostname = 'app.deepsecurity.trendmicro.com' if not dsm_hostname else dsm_hostname # default to Deep Security as a Service
 		self._port = 443 # on-premise defaults to 4119
 		self.rest_api_path = 'rest'
 		self.soap_api_wsdl = 'webservice/Manager?WSDL'
@@ -40,13 +51,15 @@ class Manager(object):
 		self.computers = {}
 		self.computer_details = {}
 		self.cloud_accounts = {}
+		self.ip_lists = {}
 
 		# Setup functions
-		self.log = self._setup_logging()
+		self.debug = False
+		self.logger = self._setup_logging()
 		self._set_url()
 
 		# Try to start a session if possible
-		if username and password:
+		if username and password and start_session:
 			self.start_session(username=username, password=password, tenant=tenant)
 
 	def __del__(self):
@@ -101,13 +114,19 @@ class Manager(object):
 		"""
 
 		# Based on tips from http://www.blog.pythonlibrary.org/2012/08/02/python-101-an-intro-to-logging/
+		logging.basicConfig(level=logging.ERROR)
 
 		# turn down suds logging
 		logging.getLogger('suds.client').setLevel(logging.ERROR)
+		if self.debug:
+			logging.getLogger('suds.client').setLevel(logging.DEBUG)
 
 		# setup module logging
 		logger = logging.getLogger("DeepSecurity.API")
 		logger.setLevel(logging.WARNING)
+		if self.debug:
+			logger.setLevel(logging.DEBUG)
+
 		formatter = logging.Formatter('[%(asctime)s]\t%(message)s', '%Y-%m-%d %H:%M:%S')
 		stream_handler = logging.StreamHandler()
 		stream_handler.setFormatter(formatter)
@@ -160,7 +179,7 @@ class Manager(object):
 		try:
 			soap_client = suds.client.Client(wsdl_path)
 		except Exception, soap_err:
-			self.log.error("Could not create a SOAP client. Threw exception: %s" % soap_err)
+			self.log("Could not create a SOAP client. Threw exception: %s" % soap_err)
 			soap_client = None
 
 		return soap_client
@@ -216,19 +235,19 @@ class Manager(object):
 			try:
 				result = requests.get(full_url, headers=headers)
 			except Exception, get_err:
-				self.log.error("Failed to get REST call [%s] with query string. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))					
+				self.log("Failed to get REST call [%s] with query string. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))					
 		elif call.has_key('data') and call['data']:
 			# POST
 			try:
 				result = requests.post(full_url, data=json.dumps(call['data']), headers=headers)
 			except Exception, post_err:
-				self.log.error("Failed to post REST call [%s]. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))	
+				self.log("Failed to post REST call [%s]. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))	
 		else:
 			# default to GET
 			try:
 				result = requests.get(full_url, headers=headers)
 			except Exception, get_err:
-				self.log.error("Failed to get REST call [%s]. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))	
+				self.log("Failed to get REST call [%s]. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))	
 
 		return result
 
@@ -251,7 +270,7 @@ class Manager(object):
 		try:
 			result = getattr(self.soap_client.service, '%s' % call['method'])(**data)
 		except Exception, soap_err:
-			self.log.error("Failed to make SOAP call [%s]. Threw exception: %s" % (call['method'], soap_err))
+			self.log("Failed to make SOAP call [%s]. Threw exception: %s" % (call['method'], soap_err))
 			result = None
 
 		return result
@@ -278,7 +297,7 @@ class Manager(object):
 		# If the call requires authentication, make sure we have a current session
 		if call_details.has_key('auth') and call_details['auth']:
 			if (call['api'] == 'soap' and not self.session_id_soap) or (call['api'] == 'rest' and not self.session_id_rest): 
-				self.log.error("Could not make %s API call. This call requires a valid session" % call_details['api'].upper())
+				self.log("Could not make %s API call. This call requires a valid session" % call_details['api'].upper())
 				return result
 
 		if call_details['api'] in ['rest', 'soap']:
@@ -297,7 +316,7 @@ class Manager(object):
 			if in_dict in dir(self):
 				d = getattr(self, in_dict)
 		except Exception, err:
-			self.log.error("Could not find [{}] to search for [{}]".format(in_dict, search_for))
+			self.log("Could not find [{}] to search for [{}]".format(in_dict, search_for))
 
 		results = []
 		if d:
@@ -325,6 +344,15 @@ class Manager(object):
 	# *****************************************************************
 	# Public methods - API session management
 	# *****************************************************************
+	def log(self, message, err=None, level="info"):
+		"""
+		Log the specified message
+		"""
+		if err:
+			self.logger.error("{}\nThrew exception:\n\t{}".format(message, err))
+		else:
+			self.logger.info(message)
+
 	def start_session(self, username=None, password=None, tenant=None, force_new_session=False):
 		"""
 		Authenticate to the REST and SOAP APIs and start a new session for each
@@ -378,22 +406,22 @@ class Manager(object):
 			if soap_call: self.session_id_soap = self._make_call(soap_call)
 
 			if self.session_id_soap:
-				self.log.info("Authenticated successfully, starting SOAP session [%s]" % self.session_id_soap)
+				self.log("Authenticated successfully, starting SOAP session [%s]" % self.session_id_soap)
 			else:
-				self.log.info("Could not start SOAP session")
+				self.log("Could not start SOAP session")
 		elif self.session_id_soap:
-			self.log.info("Continuing with SOAP session [%s]" % self.session_id_soap)
+			self.log("Continuing with SOAP session [%s]" % self.session_id_soap)
 
 		# Do we have an existing REST session?
 		if not self.session_id_rest or force_new_session:
 			if rest_call: self.session_id_rest = (self._make_call(rest_call)).text
 
 			if self.session_id_rest:
-				self.log.info("Authenticated successfully, starting REST session [%s]" % self.session_id_rest)
+				self.log("Authenticated successfully, starting REST session [%s]" % self.session_id_rest)
 			else:
-				self.log.info("Could not start REST session")
+				self.log("Could not start REST session")
 		elif self.session_id_rest:
-			self.log.info("Continuing with REST session [%s]" % self.session_id_rest)
+			self.log("Continuing with REST session [%s]" % self.session_id_rest)
 
 		return (self.session_id_rest, self.session_id_soap)
 
@@ -421,7 +449,7 @@ class Manager(object):
 
 			result = self._make_call(soap_call)
 			result = self._make_call(rest_call)
-			self.log.info("Terminated sessions [%s] & [%s]" % (self.session_id_soap, self.session_id_rest))
+			self.log("Terminated sessions [%s] & [%s]" % (self.session_id_soap, self.session_id_rest))
 	
 		old_session_id_soap = self.session_id_soap
 		old_session_id_rest = self.session_id_rest
@@ -479,11 +507,13 @@ class Manager(object):
 		   - computers
 		   - policies
 		   - cloud accounts
+		   - ip lists
 		"""
 		self.get_computer_groups()
 		self.get_computers_with_details()
 		self.get_policies()
 		self.get_cloud_accounts()
+		self.get_ip_lists()
 
 	def get_computer_groups(self):
 		"""
@@ -680,6 +710,22 @@ class Manager(object):
 				results_by_region[region] = results
 
 		return results_by_region
+
+	def get_ip_lists(self):
+		"""
+		Get a list of all of the current IP lists in Deep Security
+		"""
+		call = {
+			'api': 'soap',
+			'method': 'IPListRetrieveAll',
+			'data': {
+				'sID': self.session_id_soap,
+			},
+			'auth': True,
+		}
+		result = self._make_call(call)
+		for obj in result:
+			self.ip_lists[obj['ID']] = ip_list.IpList(ip_list_details=obj, manager=self)
 
 	def request_events_from_computer(self, host_id):
 		"""
