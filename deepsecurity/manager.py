@@ -731,8 +731,9 @@ class Manager(object):
 			'auth': True,
 		}
 		result = self._make_call(call)
-		for obj in result:
-			self.ip_lists[obj['ID']] = ip_list.IpList(ip_list_details=obj, manager=self)
+		if result:
+			for obj in result:
+				self.ip_lists[obj['ID']] = ip_list.IpList(ip_list_details=obj, manager=self)
 
 	def request_events_from_computer(self, host_id):
 		"""
@@ -887,6 +888,7 @@ class Manager(object):
 							'to': to_timestamp,
 						}
 		result = self._make_call(call)
+		if not result: tenants = { 'computer_id_key': {} } 
 		data = self._parse_rest_response(result)
 
 		# 0--3 hostID_Type elements create an ID for the computers
