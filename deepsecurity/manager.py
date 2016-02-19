@@ -237,13 +237,13 @@ class Manager(object):
 		if call.has_key('query') and call['query'] and not call.has_key('data'):
 			# GET
 			try:
-				result = requests.get(full_url, headers=headers)
+				result = requests.get(full_url, headers=headers, verify=not self.ignore_ssl_validation)
 			except Exception, get_err:
 				self.log("Failed to get REST call [%s] with query string. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))					
 		elif call.has_key('data') and call['data']:
 			# POST
 			try:
-				result = requests.post(full_url, data=json.dumps(call['data']), headers=headers)
+				result = requests.post(full_url, data=json.dumps(call['data']), headers=headers, verify=not self.ignore_ssl_validation)
 			except Exception, post_err:
 				self.log("Failed to post REST call [%s]. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))	
 		else:
