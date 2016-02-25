@@ -16,6 +16,7 @@ import suds
 import cloud_account
 import computer
 import computer_group
+import firewall_rule
 import intrusion_prevention_rule
 import ip_list
 import policy
@@ -965,3 +966,17 @@ class Manager(object):
 		if result:
 			for obj in result:
 				self.rules['intrusion_prevention'][obj['ID']] = intrusion_prevention_rule.IntrusionPreventionRule(rule_details=obj, manager=self)
+
+	def get_firewall_rules(self):
+		"""
+		Retrieve all of the firewall rules
+		"""
+		call = self._get_call_structure()
+		call['method'] = 'firewallRuleRetrieveAll'
+		call['data'] = {
+							'sID': self.session_id_soap,
+						}
+		result = self._make_call(call)
+		if result:
+			for obj in result:
+				self.rules['firewall'][obj['ID']] = firewall_rule.FirewallRule(rule_details=obj, manager=self)
