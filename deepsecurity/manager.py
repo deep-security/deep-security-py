@@ -16,6 +16,7 @@ import suds
 import cloud_account
 import computer
 import computer_group
+import intrusion_prevention_rule
 import ip_list
 import policy
 import soap_https_handler
@@ -55,6 +56,13 @@ class Manager(object):
 		self.computer_details = {}
 		self.cloud_accounts = {}
 		self.ip_lists = {}
+		self.rules = {
+			'intrusion_prevention': {},
+			'firewall': {}, 
+			'web_reputation': {},
+			'integrity_monitoring': {},
+			'log_inspection': {},
+		}
 
 		# Setup functions
 		self._debug = debug
@@ -943,3 +951,17 @@ class Manager(object):
 		"""
 		"""
 		pass
+
+	def get_intrusion_prevention_rules(self):
+		"""
+		Retrieve all of the intrusion prevention rules
+		"""
+		call = self._get_call_structure()
+		call['method'] = 'DPIRuleRetrieveAll'
+		call['data'] = {
+							'sID': self.session_id_soap,
+						}
+		result = self._make_call(call)
+		if result:
+			for obj in result:
+				self.rules['intrusion_prevention'][obj['ID']] = intrusion_prevention_rule.IntrusionPreventionRule(rule_details=obj, manager=self)
