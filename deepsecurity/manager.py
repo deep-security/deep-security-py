@@ -17,6 +17,7 @@ import cloud_account
 import computer
 import computer_group
 import firewall_rule
+import integrity_monitoring_rule
 import intrusion_prevention_rule
 import ip_list
 import policy
@@ -980,3 +981,17 @@ class Manager(object):
 		if result:
 			for obj in result:
 				self.rules['firewall'][obj['ID']] = firewall_rule.FirewallRule(rule_details=obj, manager=self)
+
+	def get_integrity_monitoring_rules(self):
+		"""
+		Retrieve all of the integrity monitoring rules
+		"""
+		call = self._get_call_structure()
+		call['method'] = 'integrityRuleRetrieveAll'
+		call['data'] = {
+							'sID': self.session_id_soap,
+						}
+		result = self._make_call(call)	
+		if result:
+			for obj in result:
+				self.rules['integrity_monitoring'][obj['ID']] = integrity_monitoring_rule.IntegrityMonitoringRule(rule_details=obj, manager=self)
