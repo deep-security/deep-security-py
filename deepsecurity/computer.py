@@ -12,7 +12,6 @@ class Computer(object):
 		Convert the most useful host details returned from the API into
 		top level properties
 		"""
-		print host_details
 		for key, prop in {
 			'ID': 'id',
 			'name': 'hostname',
