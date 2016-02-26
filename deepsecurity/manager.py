@@ -20,6 +20,7 @@ import firewall_rule
 import integrity_monitoring_rule
 import intrusion_prevention_rule
 import ip_list
+import log_inspection_rule
 import policy
 import soap_https_handler
 
@@ -995,3 +996,17 @@ class Manager(object):
 		if result:
 			for obj in result:
 				self.rules['integrity_monitoring'][obj['ID']] = integrity_monitoring_rule.IntegrityMonitoringRule(rule_details=obj, manager=self)
+
+	def get_log_inspection_rules(self):
+		"""
+		Retrieve all of the log inspection rules
+		"""
+		call = self._get_call_structure()
+		call['method'] = 'logInspectionRuleRetrieveAll'
+		call['data'] = {
+							'sID': self.session_id_soap,
+						}
+		result = self._make_call(call)
+		if result:
+			for obj in result:
+				self.rules['log_inspection'][obj['ID']] = log_inspection_rule.LogInspectionRule(rule_details=obj, manager=self)
