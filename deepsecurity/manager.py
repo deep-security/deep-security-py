@@ -1010,3 +1010,18 @@ class Manager(object):
 		if result:
 			for obj in result:
 				self.rules['log_inspection'][obj['ID']] = log_inspection_rule.LogInspectionRule(rule_details=obj, manager=self)
+
+	def get_all_rules(self):
+		"""
+		Retrieve all of the rules from the Deep Security Manager
+
+		Calls;
+		- get_intrusion_prevention_rules
+		- get_firewall_rules
+		- get_integrity_monitoring_rules
+		- get_log_inspection_rules
+		"""
+		self.get_intrusion_prevention_rules()
+		self.get_firewall_rules()
+		self.get_integrity_monitoring_rules()
+		self.get_log_inspection_rules()
