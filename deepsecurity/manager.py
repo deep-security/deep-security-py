@@ -593,6 +593,11 @@ class Manager(object):
 	def get_computers_with_details(self, detail_level='HIGH'):
 		"""
 		Get a list of all the Computers managed by Deep Security
+
+		Acceptable values for detail_level are:
+		- HIGH
+		- MEDIUM
+		- LOW
 		"""
 		host_filter_type = self.soap_client.factory.create("EnumHostFilterType")
 		host_details = self.soap_client.factory.create("EnumHostDetailLevel")
@@ -623,6 +628,7 @@ class Manager(object):
 		if results:
 			if not self.computers: self.computers = {}
 			for result in results:
+				return result
 				self.computers[result['ID']] = computer.Computer(result, manager=self)
 
 	def get_computer_details(self, computer_hostname=None):
