@@ -5,11 +5,12 @@ import json
 import inspect
 import logging
 import os
+import ssl
 import urllib
+import urllib2
 import xml.etree.ElementTree as ET
 
 # 3rd party libraries
-import requests
 import suds
 
 # Project libraries
@@ -24,6 +25,26 @@ import ip_list
 import log_inspection_rule
 import policy
 import soap_https_handler
+
+class RequestsProxyResponse(object):
+	"""
+	A proxy class to handle requests formatted responses
+
+	* The requests library has been removed as a requirement for the library
+	"""
+	def __init__(self, text=None, json=None, status=200):
+		self.text = text
+		self.json = json
+		self._status_code = status
+		self.ok = False
+
+		@property
+		def status_code(self): return self._status_code
+
+		@status_code.setter
+		def status_code(self, value):
+			self._status_code = int(value)
+			if self._status_code == 200: self.ok = True
 
 class Manager(object):
 	"""
@@ -150,6 +171,13 @@ class Manager(object):
 		logging.getLogger('suds.client').setLevel(logging.ERROR)
 		if self._debug:
 			logging.getLogger('suds.client').setLevel(logging.DEBUG)
+			logging.getLogger('suds.transport').setLevel(logging.DEBUG)
+			#logging.getLogger('suds.xsd.schema').setLevel(logging.DEBUG)
+			#logging.getLogger('suds.wsdl').setLevel(logging.DEBUG)
+			#logging.getLogger('suds.resolver').setLevel(logging.DEBUG)
+			#logging.getLogger('suds.xsd.query').setLevel(logging.DEBUG)
+			#logging.getLogger('suds.xsd.basic').setLevel(logging.DEBUG)
+			#logging.getLogger('suds.binding.marshaller').setLevel(logging.DEBUG)
 
 		# setup module logging
 		logger = logging.getLogger("DeepSecurity.API")
@@ -246,25 +274,49 @@ class Manager(object):
 				if v: qs[k] = v
 			full_url += '?%s' % urllib.urlencode(qs)
 
-		# Make the call
-		if call.has_key('query') and call['query'] and not call.has_key('data'):
-			# GET
-			try:
-				result = requests.get(full_url, headers=headers, verify=not self.ignore_ssl_validation)
-			except Exception, get_err:
-				self.log("Failed to get REST call [%s] with query string. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))					
+		# Prep the SSL context
+		ssl_context = ssl.create_default_context()
+		if self.ignore_ssl_validation:
+			ssl_context.check_hostname = False
+			ssl_context.verify_mode = ssl.CERT_NONE
+
+		# Prep the URL opener
+		url_opener = urllib2.build_opener(urllib2.HTTPSHandler(context=ssl_context))
+	
+		# Prep the request
+		request = None
+		request_type = 'GET'
+		if call['method'] == 'authentication/logout':
+			self.log("Ending a REST API session requires a DELETE request")
+			request = urllib2.Request(full_url, headers=headers)
+			setattr(request, 'get_method', lambda: 'DELETE') # make this request use the DELETE HTTP verb
+			request_type = 'DELETE'
 		elif call.has_key('data') and call['data']:
 			# POST
-			try:
-				result = requests.post(full_url, data=json.dumps(call['data']), headers=headers, verify=not self.ignore_ssl_validation)
-			except Exception, post_err:
-				self.log("Failed to post REST call [%s]. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))	
+			request = urllib2.Request(full_url, data=json.dumps(call['data']), headers=headers)
+			request_type = 'POST'
 		else:
-			# default to GET
+			# GET
+			request = urllib2.Request(full_url, headers=headers)
+
+		# Make the request
+		response = None
+		try:
+			response = url_opener.open(request)
+		except Exception, url_err:
+			self.log("Failed to make REST {} call [{}]".format(request_type, call['method'].lstrip('/')), err=url_err)
+
+		# Convert the request from JSON
+		result = RequestsProxyResponse()
+		result.status_code = response.getcode() if response else None
+		if response:
+			result.text = response.read()
 			try:
-				result = requests.get(full_url, headers=headers)
-			except Exception, get_err:
-				self.log("Failed to get REST call [%s]. Threw exception: /%s" % (call['method'].lstrip('/'), post_err))	
+				result.json = json.loads(result.text)
+			except Exception, json_err:
+				# we manually format the exception because it's expected with some REST API calls
+				# and generally none fatal, no need to output in the log constantly
+				self.log("Could not convert the response for call {} to JSON. Threw exception:\n\t{}".format(call['method'].lstrip('/'), json_err))
 
 		return result
 

@@ -10,12 +10,6 @@ Deep Security has two APIs that complement each other; one via a SOAP interface 
 
 As of version 9.6, most projects using the API are going to interact with both APIs. This SDK presents a unified front so the you don't have to differentiate between the two.
 
-## Pre-Requisites
-
-```bash
-pip install -r requirements.txt
-```
-
 ## Usage
 
 ```python
