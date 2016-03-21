@@ -11,7 +11,6 @@ import urllib2
 import xml.etree.ElementTree as ET
 
 # 3rd party libraries
-import requests
 import suds
 
 # Project libraries
@@ -172,6 +171,13 @@ class Manager(object):
 		logging.getLogger('suds.client').setLevel(logging.ERROR)
 		if self._debug:
 			logging.getLogger('suds.client').setLevel(logging.DEBUG)
+			logging.getLogger('suds.transport').setLevel(logging.DEBUG)
+			#logging.getLogger('suds.xsd.schema').setLevel(logging.DEBUG)
+			#logging.getLogger('suds.wsdl').setLevel(logging.DEBUG)
+			#logging.getLogger('suds.resolver').setLevel(logging.DEBUG)
+			#logging.getLogger('suds.xsd.query').setLevel(logging.DEBUG)
+			#logging.getLogger('suds.xsd.basic').setLevel(logging.DEBUG)
+			#logging.getLogger('suds.binding.marshaller').setLevel(logging.DEBUG)
 
 		# setup module logging
 		logger = logging.getLogger("DeepSecurity.API")
