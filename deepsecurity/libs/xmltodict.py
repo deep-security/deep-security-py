@@ -370,7 +370,7 @@ def _emit(key, value, content_handler,
             content_handler.ignorableWhitespace(newl)
 
 
-def unparse(input_dict, output=None, encoding='utf-8', full_document=True,
+def unparse(input_dict, output=None, encoding='utf-8', full_document=True, 
             **kwargs):
     """Emit an XML document for the given `input_dict` (reverse of `parse`).
 

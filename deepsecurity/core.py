@@ -204,6 +204,38 @@ class CoreApi(object):
 
     return result
 
+  def _prefix_keys(self, prefix, d):
+    """
+    Add a namespace prefix to all keys in a dict data type
+    """
+    if not type(d) == type({}): return d
+    new_d = d.copy()
+    for k,v in d.items():
+      new_key = "{}:{}".format(prefix, k)
+      new_v = v
+      if type(v) == type({}): new_v = self._prefix_keys(prefix, v)
+      new_d[new_key] = new_v 
+      del(new_d[k])
+
+    return new_d    
+
+  def _prep_data_for_soap(self, call, details):
+    """
+    Prepare the complete XML SOAP envelope
+    """
+    data = xmltodict.unparse(self._prefix_keys('ns1', { call: details }), pretty=False, full_document=False)
+    soap_xml = """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <SOAP-ENV:Envelope xmlns:ns0="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="urn:Manager" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+      <SOAP-ENV:Header/>
+        <ns0:Body>
+          {}
+        </ns0:Body>
+    </SOAP-ENV:Envelope>
+    """.format(data).strip()
+
+    return soap_xml
+
   def log(self, message='', err=None, level='info'):
     if not level.lower() in [
       'critical',
