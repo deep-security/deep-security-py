@@ -206,7 +206,8 @@ class CoreApi(object):
 
   def _prefix_keys(self, prefix, d):
     """
-    Add a namespace prefix to all keys in a dict data type
+    Add the specified XML namespace prefix to all keys in the
+    passed dict
     """
     if not type(d) == type({}): return d
     new_d = d.copy()
@@ -237,6 +238,9 @@ class CoreApi(object):
     return soap_xml
 
   def log(self, message='', err=None, level='info'):
+    """
+    Log a message
+    """
     if not level.lower() in [
       'critical',
       'debug',
