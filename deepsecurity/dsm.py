@@ -22,7 +22,6 @@ class Manager(core.CoreApi):
     self._password = password
     self.ignore_ssl_validation = ignore_ssl_validation
     self.hostname = hostname
-    self._sessions = { self.API_TYPE_REST: None, self.API_TYPE_SOAP: None }
 
   def __del__(self):
     """
@@ -112,7 +111,7 @@ class Manager(core.CoreApi):
     else:
       soap_call['call'] = 'authenticate'
 
-    response = self._request(soap_call)
+    response = self._request(soap_call, auth_required=False)
     if response and response['data']: self._sessions[self.API_TYPE_SOAP] = response['data']
 
     # then the REST API
@@ -130,7 +129,7 @@ class Manager(core.CoreApi):
     else:
       rest_call['call'] = 'authentication/login/primary'
 
-    response = self._request(rest_call)
+    response = self._request(rest_call, auth_required=False)
     if response and response['raw']: self._sessions[self.API_TYPE_REST] = response['raw']
 
     if self._sessions[self.API_TYPE_REST] and self._sessions[self.API_TYPE_SOAP]:
@@ -144,21 +143,15 @@ class Manager(core.CoreApi):
     """
     # first the SOAP API
     soap_call = self._get_request_format(call='endSession')
-    soap_call['data'] = {
-      'sID': self._sessions[self.API_TYPE_SOAP]
-      }
-
-    response = self._request(soap_call)
-    if response and response['status'] == 200: self._sessions[self.API_TYPE_SOAP] = None
+    if self._sessions[self.API_TYPE_SOAP]:
+      response = self._request(soap_call)
+      if response and response['status'] == 200: self._sessions[self.API_TYPE_SOAP] = None
 
     # then the REST API
     rest_call = self._get_request_format(api=self.API_TYPE_REST, call='authentication/logout')
-    rest_call['query'] = {
-      'sID': self._sessions[self.API_TYPE_REST]
-      }
-
-    response = self._request(rest_call)
-    if response and response['status'] == 200: self._sessions[self.API_TYPE_REST] = None
+    if self._sessions[self.API_TYPE_REST]:
+      response = self._request(rest_call)
+      if response and response['status'] == 200: self._sessions[self.API_TYPE_REST] = None
 
     if self._sessions[self.API_TYPE_REST] and self._sessions[self.API_TYPE_SOAP]:
       return True

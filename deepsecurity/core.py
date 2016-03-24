@@ -16,6 +16,7 @@ class CoreApi(object):
     self.API_TYPE_SOAP = 'SOAP'
     self._rest_api_endpoint = ''
     self._soap_api_endpoint = ''
+    self._sessions = { self.API_TYPE_REST: None, self.API_TYPE_SOAP: None }
     self.ignore_ssl_validation = False
     self._log_at_level = logging.WARNING
     self.logger = self._set_logging()
@@ -81,7 +82,7 @@ class CoreApi(object):
       'data': None,
     }
 
-  def _request(self, request):
+  def _request(self, request, auth_required=True):
     """
     Make an HTTP(S) request to an API endpoint based on what's specified in the 
     request object passed
@@ -131,6 +132,17 @@ class CoreApi(object):
       url = self._soap_api_endpoint
 
     self.log("Making a request to {}".format(url), level='debug')
+
+    # add the authentication parameters
+    if auth_required:
+      if request['api'] == self.API_TYPE_REST:
+        # sID is a query string
+        if not request['query']: request['query'] = {}
+        request['query']['sID'] = self._sessions[self.API_TYPE_REST]
+      elif request['api'] == self.API_TYPE_SOAP:
+        # sID is part of the data
+        if not request['data']: request['data'] = {}
+        request['data']['sID'] = self._sessions[self.API_TYPE_SOAP]
 
     # remove any blank request keys
     for k, v in request.items():
