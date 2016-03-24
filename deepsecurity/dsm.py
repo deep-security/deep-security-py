@@ -24,6 +24,20 @@ class Manager(core.CoreApi):
     self.hostname = hostname
     self._sessions = { self.API_TYPE_REST: None, self.API_TYPE_SOAP: None }
 
+  def __del__(self):
+    """
+    Try to gracefully clean up the session
+    """
+    try:
+      self.sign_out()
+    except Exception, err: pass
+
+  def __str__(self):
+    """
+    Return a better string representation
+    """
+    return "Manager <{}:{}>".format(self.hostname, self.port)
+
   # *******************************************************************
   # properties
   # *******************************************************************
@@ -86,7 +100,6 @@ class Manager(core.CoreApi):
     """
     Sign in to the Deep Security APIs
     """
-
     # first the SOAP API
     soap_call = self._get_request_format()
     soap_call['data'] = {
@@ -129,6 +142,27 @@ class Manager(core.CoreApi):
     """
     Sign out to the Deep Security APIs
     """
-    pass
+    # first the SOAP API
+    soap_call = self._get_request_format(call='endSession')
+    soap_call['data'] = {
+      'sID': self._sessions[self.API_TYPE_SOAP]
+      }
+
+    response = self._request(soap_call)
+    if response and response['status'] == 200: self._sessions[self.API_TYPE_SOAP] = None
+
+    # then the REST API
+    rest_call = self._get_request_format(api=self.API_TYPE_REST, call='authentication/logout')
+    rest_call['query'] = {
+      'sID': self._sessions[self.API_TYPE_REST]
+      }
+
+    response = self._request(rest_call)
+    if response and response['status'] == 200: self._sessions[self.API_TYPE_REST] = None
+
+    if self._sessions[self.API_TYPE_REST] and self._sessions[self.API_TYPE_SOAP]:
+      return True
+    else:
+      return False
   
   
