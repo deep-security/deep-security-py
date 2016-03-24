@@ -14,8 +14,8 @@ class CoreApi(object):
   def __init__(self):
     self.API_TYPE_REST = 'REST'
     self.API_TYPE_SOAP = 'SOAP'
-    self.rest_api_endpoint = ''
-    self.soap_api_endpoint = ''
+    self._rest_api_endpoint = ''
+    self._soap_api_endpoint = ''
     self.ignore_ssl_validation = False
     self._log_at_level = logging.WARNING
     self.logger = self._set_logging()
@@ -72,6 +72,15 @@ class CoreApi(object):
 
     return logger
 
+  def _get_request_format(self, api=None, call=None):
+    if not api: api = self.API_TYPE_SOAP
+    return {
+      'api': api,
+      'call': call,
+      'query': None,
+      'data': None,
+    }
+
   def _request(self, request):
     """
     Make an HTTP(S) request to an API endpoint based on what's specified in the 
@@ -112,14 +121,20 @@ class CoreApi(object):
       'call'
       ]:
       if not request.has_key(required_key) and request[required_key]:
-        self.log("All requests are required to have a key [{}] with a value".format(required_key), level="critical")
+        self.log("All requests are required to have a key [{}] with a value".format(required_key), level='critical')
         return None
 
     url = None
     if request['api'] == self.API_TYPE_REST:
-      url = "{}/{}".format(self.rest_api_endpoint, request['call'].lstrip('/'))
+      url = "{}/{}".format(self._rest_api_endpoint, request['call'].lstrip('/'))
     else:
-      url = self.soap_api_endpoint
+      url = self._soap_api_endpoint
+
+    self.log("Making a request to {}".format(url), level='debug')
+
+    # remove any blank request keys
+    for k, v in request.items():
+      if not v: request[k] = None
 
     # prep the query string
     if request.has_key('query') and request['query']:
@@ -129,6 +144,7 @@ class CoreApi(object):
         if v: qs[k] = v
 
       url += '?%s' % urllib.urlencode(qs)
+      self.log("Added query string. Full URL is now {}".format(url), level='debug')
 
     self.log("URL to request is: {}".format(url))
 
@@ -158,26 +174,32 @@ class CoreApi(object):
         'SOAPAction': '',
         'content-type': 'application/soap+xml'
         }
-      url_request = urllib2.Request(url, data=request['data'], headers=headers)
+      data = self._prep_data_for_soap(request['call'], request['data'])
+      url_request = urllib2.Request(url, data=data, headers=headers)
       request_type = 'POST'
+      self.log("Making a SOAP request with headers {}".format(headers), level='debug')
+      self.log("   and data {}".format(data), level='debug')
     elif request['call'] == 'authentication/logout':
       url_request = urllib2.Request(url, headers=headers)
       setattr(url_request, 'get_method', lambda: 'DELETE') # make this request use the DELETE HTTP verb
       request_type = 'DELETE'
+      self.log("Making a REST DELETE request with headers {}".format(headers), level='debug')
     elif request.has_key('data') and request['data']:
       # POST
       url_request = urllib2.Request(url, data=json.dumps(request['data']), headers=headers)
       request_type = 'POST'
+      self.log("Making a REST POST request with headers {}".format(headers), level='debug')
     else:
       # GET
       url_request = urllib2.Request(url, headers=headers)
+      self.log("Making a REST GET request with headers {}".format(headers), level='debug')
 
     # Make the request
     response = None
     try:
       response = url_opener.open(url_request)
     except Exception, url_err:
-      self.log("Failed to make {} {} call [{}]".format(request['api'].upper(), request_type, call['method'].lstrip('/')), err=url_err)
+      self.log("Failed to make {} {} call [{}]".format(request['api'].upper(), request_type, request['call'].lstrip('/')), err=url_err)
 
     # Convert the request from JSON
     result = {
@@ -185,13 +207,20 @@ class CoreApi(object):
       'raw': response.read() if response else None,
       'data': None
     }
+    self.log("Call returned HTTP status {} and {} bytes of data".format(result['status'], len(result['raw'])), level='debug')
 
     if response:
       if request['api'] == self.API_TYPE_SOAP:
         # XML response
         try:
           if result['raw']:
-            result['data'] = xmltodict.parse(result['raw'])
+            full_data = xmltodict.parse(result['raw'])
+            if full_data.has_key('soapenv:Envelope') and full_data['soapenv:Envelope'].has_key('soapenv:Body'):
+              result['data'] = full_data['soapenv:Envelope']['soapenv:Body']
+              if result['data'].has_key('{}Response'.format(request['call'])) and result['data']['{}Response'.format(request['call'])].has_key('{}Return'.format(request['call'])):
+                result['data'] = result['data']['{}Response'.format(request['call'])]['{}Return'.format(request['call'])]
+            else:
+              result['data'] = full_data
         except Exception, xmltodict_err:
           self.log("Could not convert response from call {}".format(request['call']), err=xmltodict_err)
       else:

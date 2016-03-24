@@ -7,3 +7,4 @@ sys.path.append(current_path)
 
 # import project files as required
 import manager
+import dsm
