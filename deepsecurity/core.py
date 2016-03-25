@@ -173,15 +173,18 @@ class CoreApi(object):
     # Prep the request
     request_type = 'GET'
     headers = {
-      'Accept': 'application/json',
+      'Accept': 'application/json,text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*',
       'Content-Type': 'application/json',
       }
 
     # authentication calls don't accept the Accept header
     if request['call'].startswith('authentication'): del(headers['Accept'])
-    if request['call'] == 'apiVersion' and request['api'] == self.API_TYPE_REST:
+    if request['api'] == self.API_TYPE_REST and request['call'] in [
+      'apiVersion',
+      'status/manager/ping'
+      ]:
       headers = {
-        'Accept': 'text/plain',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*',
         'Content-Type': 'text/plain',
         }
 
@@ -306,3 +309,8 @@ class CoreApi(object):
       func(message)
     except Exception, log_err:
       self.logger.critical("Could not write to log. Threw exception:\n\t{}".format(log_err))
+
+class CoreDict(object):
+  def get(self): pass
+
+  def find(self, **kwargs): pass

@@ -198,3 +198,16 @@ class Manager(core.CoreApi):
   
     return result
   
+  def is_up(self):
+    """
+    Check to see if the Manager is up and responding to requests
+    """
+    result = None
+    rest_call = self._get_request_format(api=self.API_TYPE_REST, call='status/manager/ping')
+    response = self._request(rest_call, auth_required=False)
+    if response and response['status'] == 200:
+      result = True
+    else:
+      result = False
+
+    return result
