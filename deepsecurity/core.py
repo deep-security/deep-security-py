@@ -331,6 +331,7 @@ class CoreDict(dict):
           if 'has_key' in dir(vi) and vi.has_key(k): val_to_check = vi[k]
 
           if val_to_check:
+            # the comparison changes depending on the value type
             if type(val_to_check) in [
               type(''),
               type(u''),
