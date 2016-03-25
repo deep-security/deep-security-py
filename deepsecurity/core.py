@@ -339,9 +339,13 @@ class CoreDict(dict):
               m = re.search(r'{}'.format(v), val_to_check)
               if m:
                 item_matches = True
+              else:
+                item_matches = False
                 break
             elif val_to_check == v:
               item_matches = True
+            else:
+              item_matches = False
               break
 
         if item_matches: results.append(ki)
