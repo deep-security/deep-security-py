@@ -5,6 +5,7 @@ import datetime
 
 # project libraries
 import core
+import computers
 
 class Manager(core.CoreApi):
   def __init__(self,
