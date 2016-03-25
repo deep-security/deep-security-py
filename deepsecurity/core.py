@@ -1,6 +1,7 @@
 # standard library
 import json
 import logging
+import re
 import ssl
 import urllib
 import urllib2
@@ -310,7 +311,38 @@ class CoreApi(object):
     except Exception, log_err:
       self.logger.critical("Could not write to log. Threw exception:\n\t{}".format(log_err))
 
-class CoreDict(object):
+class CoreDict(dict):
   def get(self): pass
 
-  def find(self, **kwargs): pass
+  def find(self, **kwargs):
+    """
+    Find any keys where the values match the cumulative kwargs patterns
+    """
+    results = []
+
+    if kwargs:
+      for ki, vi in self.items():
+        item_matches = False
+
+        for k, v in kwargs.items():
+          # does the value have the property?
+          val_to_check = None
+          if k in dir(vi): val_to_check = getattr(vi, k)
+          if 'has_key' in dir(vi) and vi.has_key(k): val_to_check = vi[k]
+
+          if val_to_check:
+            if type(val_to_check) in [
+              type(''),
+              type(u''),
+              ]:
+              m = re.search(r'{}'.format(v), val_to_check)
+              if m:
+                item_matches = True
+                break
+            elif val_to_check == v:
+              item_matches = True
+              break
+
+        if item_matches: results.append(ki)
+
+    return results
