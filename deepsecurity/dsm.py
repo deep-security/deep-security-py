@@ -162,6 +162,29 @@ class Manager(core.CoreApi):
       return True
     else:
       return False
+
+  def get_api_version(self):
+    """
+    Get the version of the REST and SOAP APIs current running on the Manager
+    """
+    versions = {
+      self.API_TYPE_REST: None,
+      self.API_TYPE_SOAP: None,
+    }
+
+    # first the SOAP API
+    soap_call = self._get_request_format(call='getApiVersion')
+    response = self._request(soap_call, auth_required=False)
+    if response and response['status'] == 200 and response['data']:
+      versions[self.API_TYPE_SOAP] = response['data']
+
+    # then the REST API
+    rest_call = self._get_request_format(api=self.API_TYPE_REST, call='apiVersion')
+    response = self._request(rest_call, auth_required=False)
+    if response and response['status'] == 200 and response['data']:
+      versions[self.API_TYPE_REST] = response['data']
+
+    return versions
   
   def get_time(self):
     """
@@ -170,7 +193,7 @@ class Manager(core.CoreApi):
     result = None
     soap_call = self._get_request_format(call='getManagerTime')
     response = self._request(soap_call, auth_required=False)
-    if response['status'] == 200 and response['data'].has_key('#text'):
+    if response and response['status'] == 200 and response['data'].has_key('#text'):
       result = datetime.datetime.strptime(response['data']['#text'], "%Y-%m-%dT%H:%M:%S.%fZ")
   
     return result

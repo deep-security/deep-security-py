@@ -179,6 +179,11 @@ class CoreApi(object):
 
     # authentication calls don't accept the Accept header
     if request['call'].startswith('authentication'): del(headers['Accept'])
+    if request['call'] == 'apiVersion' and request['api'] == self.API_TYPE_REST:
+      headers = {
+        'Accept': 'text/plain',
+        'Content-Type': 'text/plain',
+        }
 
     if request['api'] == self.API_TYPE_SOAP:
       # always a POST
@@ -219,7 +224,8 @@ class CoreApi(object):
       'raw': response.read() if response else None,
       'data': None
     }
-    self.log("Call returned HTTP status {} and {} bytes of data".format(result['status'], len(result['raw'])), level='debug')
+    bytes_of_data = len(result['raw']) if result['raw'] else 0
+    self.log("Call returned HTTP status {} and {} bytes of data".format(result['status'], bytes_of_data), level='debug')
 
     if response:
       if request['api'] == self.API_TYPE_SOAP:
