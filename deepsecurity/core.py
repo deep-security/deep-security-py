@@ -312,6 +312,9 @@ class CoreApi(object):
       self.logger.critical("Could not write to log. Threw exception:\n\t{}".format(log_err))
 
 class CoreDict(dict):
+  def __init__(self):
+    self._exempt_from_find = []
+
   def get(self): pass
 
   def find(self, **kwargs):
@@ -322,6 +325,8 @@ class CoreDict(dict):
 
     if kwargs:
       for ki, vi in self.items():
+        if ki in self._exempt_from_find or vi in self._exempt_from_find: continue
+        
         item_matches = False
 
         for k, v in kwargs.items():
