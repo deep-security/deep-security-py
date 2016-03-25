@@ -1,4 +1,5 @@
 # standard library
+import datetime
 
 # 3rd party libraries
 
@@ -93,7 +94,11 @@ class Manager(core.CoreApi):
     self._soap_api_endpoint = "https://{}:{}/webservice/Manager".format(self.hostname, self.port)
 
   def _reset_session(self):
-    pass
+    """
+    Reset the current session due to a credentials change
+    """
+    self.sign_out()
+    self.sign_in()
   
   def sign_in(self):
     """
@@ -158,4 +163,15 @@ class Manager(core.CoreApi):
     else:
       return False
   
+  def get_time(self):
+    """
+    Get the current time as set on the Manager
+    """
+    result = None
+    soap_call = self._get_request_format(call='getManagerTime')
+    response = self._request(soap_call, auth_required=False)
+    if response['status'] == 200 and response['data'].has_key('#text'):
+      result = datetime.datetime.strptime(response['data']['#text'], "%Y-%m-%dT%H:%M:%S.%fZ")
+  
+    return result
   
