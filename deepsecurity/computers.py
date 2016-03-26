@@ -164,6 +164,12 @@ class Computer(core.CoreObject):
     """
     return self.manager.scan_computers_for_malware(self.ID)
 
+  def scan_for_integrity(self):
+    """
+    Request an integrity scan be run on the computer
+    """
+    return self.manager.scan_computers_for_integrity(self.ID)    
+
 class ComputerGroup(core.CoreObject):
   def __init__(self, manager=None, api_response=None, log_func=None):
     self.manager = manager
@@ -191,4 +197,10 @@ class ComputerGroup(core.CoreObject):
     """
     Request a malware scan be run on all computers in this group
     """
-    return self.manager.scan_computers_for_malware(self.computers.keys())    
+    return self.manager.scan_computers_for_malware(self.computers.keys())
+
+  def scan_for_integrity(self):
+    """
+    Request a integrity scan be run on all computers in this group
+    """
+    return self.manager.scan_computers_for_integrity(self.computers.keys())        

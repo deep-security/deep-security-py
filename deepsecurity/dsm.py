@@ -254,8 +254,7 @@ class Manager(core.CoreApi):
 
   def scan_computers_for_malware(self, computer_ids):
     """
-    Request a malware scan be run immediately on the specified
-    computers
+    Request a malware scan be run on the specified computers
     """
     result = False
 
@@ -269,3 +268,20 @@ class Manager(core.CoreApi):
     if response and response['status'] == 200: result = True
     
     return result
+
+  def scan_computers_for_integrity(self, computer_ids):
+    """
+    Request a integrity scan be run on the specified computers
+    """
+    result = False
+
+    if not type(computer_ids) == type([]): computer_ids = [computer_ids]
+
+    soap_call = self._get_request_format(call='hostIntegrityScan')
+    soap_call['data'] = {
+      'hostIDs': computer_ids
+      }
+    response = self._request(soap_call)
+    if response and response['status'] == 200: result = True
+    
+    return result    
