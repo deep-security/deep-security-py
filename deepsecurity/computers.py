@@ -45,11 +45,27 @@ class ComputerGroups(core.CoreDict):
     self.manager = manager
     self.log = self.manager.log if self.manager else None
 
-  def get(self):
-    call = self.manager._get_request_format(call='hostGroupRetrieveAll')
+  def get(self, name=None, group_id=None):
+    call = None
+    if name or group_id:
+      # filtered call
+      if name:
+        call = self.manager._get_request_format(call='hostGroupRetrieveByName')
+        call['data'] = {
+          'Name': name
+          }
+      elif group_id:
+        call = self.manager._get_request_format(call='hostGroupRetrieve')
+        call['data'] = {
+          'ID': '{}'.format(group_id)
+          }
+    else:
+      call = self.manager._get_request_format(call='hostGroupRetrieveAll')
+
     response = self.manager._request(call)
     if response and response['status'] == 200:
       self.clear() # empty the current groups
+      if not type(response['data']) == type([]): response['data'] = [response['data']]
       for group in response['data']:
         computer_group_obj = ComputerGroup(group, self.log)
         if computer_group_obj:
