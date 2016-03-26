@@ -216,7 +216,10 @@ class Manager(core.CoreApi):
 
     return result
 
-  # mirror on the computers.Computer object
+  # *******************************************************************
+  # mirrored on the computers.Computer and computers.ComputerGroup 
+  # objects
+  # *******************************************************************
   def request_events_from_computer(self, computer_id):
     """
     Ask the computer to send the latest events it's seen to the DSM
@@ -226,6 +229,23 @@ class Manager(core.CoreApi):
     soap_call = self._get_request_format(call='hostGetEventsNow')
     soap_call['data'] = {
       'hostID': computer_id
+      }
+    response = self._request(soap_call)
+    if response and response['status'] == 200: result = True
+    
+    return result
+
+  def clear_alerts_and_warnings_from_computers(self, computer_ids):
+    """
+    Clear any alerts or warnings for the specified computers
+    """
+    result = False
+
+    if not type(computer_ids) == type([]): computer_ids = [computer_ids]
+
+    soap_call = self._get_request_format(call='hostClearWarningsErrors')
+    soap_call['data'] = {
+      'hostIDs': computer_ids
       }
     response = self._request(soap_call)
     if response and response['status'] == 200: result = True

@@ -152,6 +152,12 @@ class Computer(core.CoreObject):
     """
     return self.manager.request_events_from_computer(self.ID)
 
+  def clear_alerts_and_warnings(self):
+    """
+    Clear any alerts or warnings for the computer
+    """
+    return self.manager.clear_alerts_and_warnings_from_computers(self.ID)
+
 class ComputerGroup(core.CoreObject):
   def __init__(self, manager=None, api_response=None, log_func=None):
     self.manager = manager
@@ -166,6 +172,11 @@ class ComputerGroup(core.CoreObject):
     for computer_id, computer in self.computers.items():
       if 'send_events' in dir(computer):
         results[computer_id] = computer.send_events()
-        
 
     return results
+
+  def clear_alerts_and_warnings(self):
+    """
+    Clear any alerts or warnings for all computers in this group
+    """
+    return self.manager.clear_alerts_and_warnings_from_computers(self.computers.keys())
