@@ -320,6 +320,41 @@ class CoreDict(dict):
   def find(self, **kwargs):
     """
     Find any keys where the values match the cumulative kwargs patterns
+
+    If a keyword's value is a list, .find will match on any value for that keyword
+
+    .find(id=1)
+    >>> returns any item with a property 'id' and value in [1]
+        possibilities:
+           { 'id': 1, 'name': 'One'}
+           { 'id': 1, 'name': 'Two'}
+        
+    .find(id=[1,2])
+    >>> returns any item with a property 'id' and value in [1,2]
+        possibilities:
+           { 'id': 1, 'name': 'One'}
+           { 'id': 2, 'name': 'One'}
+           { 'id': 1, 'name': 'Two'}
+           { 'id': 2, 'name': 'Two'}
+
+    .find(id=1, name='One')
+    >>> returns any item with a property 'id' and value in [1] AND a property 'name' and value in ['One']
+        possibilities:
+           { 'id': 1, 'name': 'One'}
+        
+    .find(id=[1,2], name='One')
+    >>> returns any item with a property 'id' and value in [1,2] AND a property 'name' and value in ['One']
+        possibilities:
+           { 'id': 1, 'name': 'One'}
+           { 'id': 2, 'name': 'One'}
+
+    .find(id=[1,2], name=['One,Two'])
+    >>> returns any item with a property 'id' and value in [1,2] AND a property 'name' and value in ['One','Two']
+        possibilities:
+           { 'id': 1, 'name': 'One'}
+           { 'id': 2, 'name': 'One'}
+           { 'id': 1, 'name': 'Two'}
+           { 'id': 2, 'name': 'Two'}
     """
     results = []
 
