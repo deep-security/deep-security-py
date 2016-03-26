@@ -212,3 +212,29 @@ class Manager(core.CoreApi):
       result = False
 
     return result
+
+  def get(self):
+    call = self._get_request_format(call='hostDetailRetrieve')
+    call['data'] = {
+        'hostFilter': {
+          'hostGroupID': None,
+          'hostID': None,
+          'securityProfileID': None,
+          'type': 'ALL_HOSTS',
+        },
+        'hostDetailLevel': 'HIGH'
+      }
+    response = self._request(call)
+    print response
+    return response
+    #print self._prep_data_for_soap(call['call'], call['data'])
+    #call = {
+    #  'api': 'soap',
+    #  'method': 'hostDetailRetrieve',
+    #  'data': {
+    #    'sID': self.session_id_soap,
+    #    'hostFilter': host_filter_transport,
+    #    'hostDetailLevel': host_details[detail_level],
+    #  },
+    #  'auth': True,
+    #}

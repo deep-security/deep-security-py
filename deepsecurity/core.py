@@ -324,35 +324,37 @@ class CoreDict(dict):
     results = []
 
     if kwargs:
-      for ki, vi in self.items():
-        if ki in self._exempt_from_find or vi in self._exempt_from_find: continue
-        
+      for item_id, item in self.items():
         item_matches = False
+        for match_attr, match_attr_vals in kwargs.items():
+          if not type(match_attr_vals) == type([]): match_attr_vals = [match_attr_vals]
 
-        for k, v in kwargs.items():
-          # does the value have the property?
-          val_to_check = None
-          if k in dir(vi): val_to_check = getattr(vi, k)
-          if 'has_key' in dir(vi) and vi.has_key(k): val_to_check = vi[k]
+          # does the current item have the property
+          attr_to_check = None
+          if match_attr in dir(item):
+            attr_to_check = getattr(item, match_attr)
+          elif 'has_key' in dir(item) and item.has_key(match_attr):
+            attr_to_check = item[match_attr]
 
-          if val_to_check:
-            # the comparison changes depending on the value type
-            if type(val_to_check) in [
-              type(''),
-              type(u''),
-              ]:
-              m = re.search(r'{}'.format(v), val_to_check)
-              if m:
-                item_matches = True
+          if attr_to_check:
+            # does the property match the specified values?
+            for match_attr_val in match_attr_vals:
+              if type(attr_to_check) in [type(''), type(u'')]:
+                # string comparison
+                match = re.search(r'{}'.format(match_attr_val), attr_to_check)
+                if match:
+                  item_matches = True
+                  break # and move on to the new kwarg
+                else:
+                  item_matches = False
               else:
-                item_matches = False
-                break
-            elif val_to_check == v:
-              item_matches = True
-            else:
-              item_matches = False
-              break
+                # object comparison
+                if attr_to_check == match_attr_val:
+                  item_matches = True
+                  break # and move on to the new kwarg
+                else:
+                  item_matches = False
 
-        if item_matches: results.append(ki)
+        if item_matches: results.append(item_id)
 
     return results
