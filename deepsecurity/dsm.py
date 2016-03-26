@@ -216,24 +216,18 @@ class Manager(core.CoreApi):
 
     return result
 
-  def get(self):
-    call = self._get_request_format(call='hostDetailRetrieve')
-    call['data'] = {
-        'hostFilter': {
-          'hostGroupID': None,
-          'hostID': None,
-          'securityProfileID': None,
-          'type': 'ALL_HOSTS',
-        },
-        'hostDetailLevel': 'HIGH'
-      }
-    response = self._request(call)
-    print response
-    return response
-    
-  def getg(self):
-    call = self._get_request_format(call='hostGroupRetrieveAll')
-    response = self._request(call)
+  # mirror on the computers.Computer object
+  def request_events_from_computer(self, computer_id):
+    """
+    Ask the computer to send the latest events it's seen to the DSM
+    """
+    result = False
 
-    print response
-    return response
+    soap_call = self._get_request_format(call='hostGetEventsNow')
+    soap_call['data'] = {
+      'hostID': computer_id
+      }
+    response = self._request(soap_call)
+    if response and response['status'] == 200: result = True
+    
+    return result

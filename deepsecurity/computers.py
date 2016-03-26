@@ -89,7 +89,7 @@ class Computers(core.CoreDict):
     if response and response['status'] == 200:
       if not type(response['data']) == type([]): response['data'] = [response['data']]
       for computer in response['data']:
-        computer_obj = Computer(computer, self.log)
+        computer_obj = Computer(self.manager, computer, self.log)
         if computer_obj:
           self[computer_obj.ID] = computer_obj
           # add this computer to any appropriate groups on the Manager()
@@ -135,17 +135,25 @@ class ComputerGroups(core.CoreDict):
       self.clear() # empty the current groups
       if not type(response['data']) == type([]): response['data'] = [response['data']]
       for group in response['data']:
-        computer_group_obj = ComputerGroup(group, self.log)
+        computer_group_obj = ComputerGroup(self.manager, group, self.log)
         if computer_group_obj:
           self[computer_group_obj.ID] = computer_group_obj
 
     return len(self)
 
 class Computer(core.CoreObject):
-  def __init__(self, api_response=None, log_func=None):
+  def __init__(self, manager=None, api_response=None, log_func=None):
+    self.manager = manager
     if api_response: self._set_properties(api_response, log_func)
 
+  def send_events(self):
+    """
+    Send the latest set of events to this computer's Manager
+    """
+    return self.manager.request_events_from_computer(self.ID)
+
 class ComputerGroup(core.CoreObject):
-  def __init__(self, api_response=None, log_func=None):
+  def __init__(self, manager=None, api_response=None, log_func=None):
+    self.manager = manager
     if api_response: self._set_properties(api_response, log_func)
     self.computers = core.CoreDict()
