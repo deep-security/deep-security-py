@@ -157,3 +157,14 @@ class ComputerGroup(core.CoreObject):
     self.manager = manager
     if api_response: self._set_properties(api_response, log_func)
     self.computers = core.CoreDict()
+
+  def send_events(self):
+    """
+    Send the latest set of events for all computers in this group
+    """
+    results = {}
+    for computer_id, computer in self.computers.items():
+      if 'send_events' in dir(computer):
+        results[computer_id] = computer.send_events()
+
+    return results
