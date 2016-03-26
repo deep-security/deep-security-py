@@ -158,6 +158,12 @@ class Computer(core.CoreObject):
     """
     return self.manager.clear_alerts_and_warnings_from_computers(self.ID)
 
+  def scan_for_malware(self):
+    """
+    Request a malware scan be run on the computer
+    """
+    return self.manager.scan_computers_for_malware(self.ID)
+
 class ComputerGroup(core.CoreObject):
   def __init__(self, manager=None, api_response=None, log_func=None):
     self.manager = manager
@@ -180,3 +186,9 @@ class ComputerGroup(core.CoreObject):
     Clear any alerts or warnings for all computers in this group
     """
     return self.manager.clear_alerts_and_warnings_from_computers(self.computers.keys())
+
+  def scan_for_malware(self):
+    """
+    Request a malware scan be run on all computers in this group
+    """
+    return self.manager.scan_computers_for_malware(self.computers.keys())    

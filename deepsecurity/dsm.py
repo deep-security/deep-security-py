@@ -251,3 +251,21 @@ class Manager(core.CoreApi):
     if response and response['status'] == 200: result = True
     
     return result
+
+  def scan_computers_for_malware(self, computer_ids):
+    """
+    Request a malware scan be run immediately on the specified
+    computers
+    """
+    result = False
+
+    if not type(computer_ids) == type([]): computer_ids = [computer_ids]
+
+    soap_call = self._get_request_format(call='hostAntiMalwareScan')
+    soap_call['data'] = {
+      'hostIDs': computer_ids
+      }
+    response = self._request(soap_call)
+    if response and response['status'] == 200: result = True
+    
+    return result
