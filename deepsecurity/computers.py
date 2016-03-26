@@ -166,5 +166,6 @@ class ComputerGroup(core.CoreObject):
     for computer_id, computer in self.computers.items():
       if 'send_events' in dir(computer):
         results[computer_id] = computer.send_events()
+        
 
     return results
