@@ -393,3 +393,15 @@ class CoreDict(dict):
         if item_matches: results.append(item_id)
 
     return results
+
+class CoreObject(object):
+  def _set_properties(self, api_response, log_func):
+    """
+    Convert the API keypairs to object properties
+    """
+    for k, v in api_response.items():
+      try:
+        setattr(self, k, v)
+      except Exception, err:
+        if log_func:
+          log_func("Could not set property {} to value {} for object {}".format(k, v, s))

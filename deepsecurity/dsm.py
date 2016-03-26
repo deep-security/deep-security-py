@@ -25,6 +25,9 @@ class Manager(core.CoreApi):
     self.ignore_ssl_validation = ignore_ssl_validation
     self.hostname = hostname
 
+    self.computer_groups = computers.ComputerGroups(manager=self)
+    self.computers = computers.Computers(manager=self)
+
   def __del__(self):
     """
     Try to gracefully clean up the session
@@ -227,14 +230,10 @@ class Manager(core.CoreApi):
     response = self._request(call)
     print response
     return response
-    #print self._prep_data_for_soap(call['call'], call['data'])
-    #call = {
-    #  'api': 'soap',
-    #  'method': 'hostDetailRetrieve',
-    #  'data': {
-    #    'sID': self.session_id_soap,
-    #    'hostFilter': host_filter_transport,
-    #    'hostDetailLevel': host_details[detail_level],
-    #  },
-    #  'auth': True,
-    #}
+    
+  def getg(self):
+    call = self._get_request_format(call='hostGroupRetrieveAll')
+    response = self._request(call)
+
+    print response
+    return response
