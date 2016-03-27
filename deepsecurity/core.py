@@ -1,4 +1,5 @@
 # standard library
+import collections
 import json
 import logging
 import re
@@ -400,8 +401,12 @@ class CoreObject(object):
     Convert the API keypairs to object properties
     """
     for k, v in api_response.items():
+      val = v
+      if 'has_key' in dir(v) and v.has_key(u'@xsi:nil') and v[u'@xsi:nil'] == u'true':
+        val = None
+
       try:
-        setattr(self, k, v)
+        setattr(self, k, val)
       except Exception, err:
         if log_func:
           log_func("Could not set property {} to value {} for object {}".format(k, v, s))

@@ -9,7 +9,6 @@ import core
 class Computers(core.CoreDict):
   def __init__(self, manager=None):
     core.CoreDict.__init__(self)
-    self._exempt_from_find.append('groups')
     self.manager = manager
     self.log = self.manager.log if self.manager else None
 
@@ -92,10 +91,22 @@ class Computers(core.CoreDict):
         computer_obj = Computer(self.manager, computer, self.log)
         if computer_obj:
           self[computer_obj.ID] = computer_obj
-          # add this computer to any appropriate groups on the Manager()
-          if 'hostGroupID' in dir(computer_obj) and computer_obj.hostGroupID:
-            if self.manager.computer_groups and self.manager.computer_groups.has_key(computer_obj.hostGroupID):
-              self.manager.computer_groups[computer_obj.hostGroupID].computers[computer_obj.ID] = computer_obj
+          
+          try:
+            # add this computer to any appropriate groups on the Manager()
+            if 'hostGroupID' in dir(computer_obj) and computer_obj.hostGroupID:
+              if self.manager.computer_groups and self.manager.computer_groups.has_key(computer_obj.hostGroupID):
+                self.manager.computer_groups[computer_obj.hostGroupID].computers[computer_obj.ID] = computer_obj
+          except Exception, hostGroupID_err:
+            self.log("Could not add Computer {} to ComputerGroup".format(computer_obj.ID), err=hostGroupID_err)
+
+          try: 
+            # add this computer to any appropriate policies on the Manager()
+            if 'securityProfileID' in dir(computer_obj) and computer_obj.securityProfileID:
+              if self.manager.policies and self.manager.policies.has_key(computer_obj.securityProfileID):
+                self.manager.policies[computer_obj.securityProfileID].computers[computer_obj.ID] = computer_obj
+          except Exception, securityProfileID_err:
+            self.log("Could not add Computer {} to Policy".format(computer_obj.ID), err=securityProfileID_err)
 
     return len(self)
 
@@ -103,6 +114,8 @@ class ComputerGroups(core.CoreDict):
   def __init__(self, manager=None):
     core.CoreDict.__init__(self)
     self.manager = manager
+    self._exempt_from_find.append('computers')
+    self.computers = core.CoreDict()
     self.log = self.manager.log if self.manager else None
 
   def get(self, name=None, group_id=None):

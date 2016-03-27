@@ -315,7 +315,7 @@ class Manager(core.CoreApi):
 
     soap_call = self._get_request_format(call='securityProfileAssignToHost')
     soap_call['data'] = {
-      'hostIDs': computer_ids
+      'hostIDs': computer_ids,
       'securityProfileID': policy_id,
       }
     response = self._request(soap_call)

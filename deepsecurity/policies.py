@@ -25,10 +25,11 @@ class Policies(core.CoreDict):
         policy_obj = Policy(self.manager, policy, self.log)
         if policy_obj:
           self[policy_obj.ID] = policy_obj
-          
+
     return len(self)
 
 class Policy(core.CoreObject):
   def __init__(self, manager=None, api_response=None, log_func=None):
     self.manager = manager
+    self.computers = core.CoreDict()
     if api_response: self._set_properties(api_response, log_func)
