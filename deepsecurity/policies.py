@@ -90,7 +90,7 @@ class Policy(core.CoreObject):
       rules = getattr(self, rule_type)
       if rules:
         for rule in rules['item']:
-          self.rules['{}-{}'.format(rule_type, rule)] = None
+          self.rules['{}-{}'.format(rule_type.replace('IDs', ''), rule)] = None
 
 class Rule(core.CoreObject):
   def __init__(self, manager=None, api_response=None, log_func=None, rule_type=None):
