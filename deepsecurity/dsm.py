@@ -6,6 +6,7 @@ import datetime
 # project libraries
 import core
 import computers
+import policies
 
 class Manager(core.CoreApi):
   def __init__(self,
@@ -27,6 +28,7 @@ class Manager(core.CoreApi):
 
     self.computer_groups = computers.ComputerGroups(manager=self)
     self.computers = computers.Computers(manager=self)
+    self.policies = policies.Policies(manager=self)
 
   def __del__(self):
     """
