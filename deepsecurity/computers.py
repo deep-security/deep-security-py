@@ -97,6 +97,7 @@ class Computers(core.CoreDict):
             if 'hostGroupID' in dir(computer_obj) and computer_obj.hostGroupID:
               if self.manager.computer_groups and self.manager.computer_groups.has_key(computer_obj.hostGroupID):
                 self.manager.computer_groups[computer_obj.hostGroupID].computers[computer_obj.ID] = computer_obj
+                self.log("Added Computer {} to ComputerGroup {}".format(computer_obj.ID, computer_obj.hostGroupID), level='debug')
           except Exception, hostGroupID_err:
             self.log("Could not add Computer {} to ComputerGroup".format(computer_obj.ID), err=hostGroupID_err)
 
@@ -105,6 +106,7 @@ class Computers(core.CoreDict):
             if 'securityProfileID' in dir(computer_obj) and computer_obj.securityProfileID:
               if self.manager.policies and self.manager.policies.has_key(computer_obj.securityProfileID):
                 self.manager.policies[computer_obj.securityProfileID].computers[computer_obj.ID] = computer_obj
+                self.log("Added Computer {} to Policy {}".format(computer_obj.ID, computer_obj.securityProfileID), level='debug')
           except Exception, securityProfileID_err:
             self.log("Could not add Computer {} to Policy".format(computer_obj.ID), err=securityProfileID_err)
 
