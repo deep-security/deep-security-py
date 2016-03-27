@@ -168,7 +168,19 @@ class Computer(core.CoreObject):
     """
     Request an integrity scan be run on the computer
     """
-    return self.manager.scan_computers_for_integrity(self.ID)    
+    return self.manager.scan_computers_for_integrity(self.ID)
+
+  def scan_for_recommendations(self):
+    """
+    Request a recommendation scan be run on the computer
+    """
+    return self.manager.scan_computers_for_recommendations(self.ID)       
+
+  def assign_policy(self, policy_id):
+    """
+    Assign the specified policy to the computer
+    """
+    return self.manager.assign_policy_to_computers(policy_id, self.ID)
 
 class ComputerGroup(core.CoreObject):
   def __init__(self, manager=None, api_response=None, log_func=None):
@@ -201,6 +213,18 @@ class ComputerGroup(core.CoreObject):
 
   def scan_for_integrity(self):
     """
-    Request a integrity scan be run on all computers in this group
+    Request an integrity scan be run on all computers in this group
     """
     return self.manager.scan_computers_for_integrity(self.computers.keys())        
+
+  def scan_for_recommendations(self):
+    """
+    Request a recommendation scan be run on all computers in this group
+    """
+    return self.manager.scan_computers_for_recommendations(self.computers.keys())
+
+  def assign_policy(self, policy_id):
+    """
+    Assign the specified policy to all computers in this group
+    """
+    return self.manager.assign_policy_to_computers(policy_id, self.computers.keys())    
