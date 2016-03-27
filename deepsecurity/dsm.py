@@ -31,6 +31,13 @@ class Manager(core.CoreApi):
     self.policies = policies.Policies(manager=self)
     self.rules = policies.Rules(manager=self)
 
+    self._term_map = {
+      'DPI': 'intrusion_prevention',
+      'firewall': 'firewall',
+      'integrity': 'integrity_monitoring',
+      'logInspection': 'log_inspection',
+      }
+
   def __del__(self):
     """
     Try to gracefully clean up the session
@@ -106,6 +113,15 @@ class Manager(core.CoreApi):
     """
     self.sign_out()
     self.sign_in()
+
+  def _map_api_term_to_new(self, name):
+    """
+    Map an API term or name to a new, logical one
+    """
+    if self._term_map.has_key(name):
+      return self._term_map[name]
+    else:
+      name
   
   def sign_in(self):
     """
