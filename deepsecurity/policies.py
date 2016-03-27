@@ -32,4 +32,28 @@ class Policy(core.CoreObject):
   def __init__(self, manager=None, api_response=None, log_func=None):
     self.manager = manager
     self.computers = core.CoreDict()
+    self.rules = core.CoreDict()
     if api_response: self._set_properties(api_response, log_func)
+    self._flatten_rules()
+
+  def _flatten_rules(self):
+    """
+    Flatten the various module rules into a master list
+    """
+    for rule_type in [
+      'DPIRuleIDs',
+      'firewallRuleIDs',
+      'integrityRuleIDs',
+      'logInspectionRuleIDs',
+      ]:
+      rules = getattr(self, rule_type)
+      if rules:
+        for rule in rules['item']:
+          self.rules['{}-{}'.format(rule_type, rule)] = None
+
+class Rule(core.CoreObject):
+  def __init__(self, manager=None, api_response=None, log_func=None, rule_type=None):
+    self.manager = manager
+    self.rule_type = rule_type
+    self.policies = core.CoreDict()
+    if api_response: self._set_properties(api_response, log_func)    
