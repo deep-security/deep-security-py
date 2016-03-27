@@ -28,6 +28,47 @@ class Policies(core.CoreDict):
 
     return len(self)
 
+class Rules(core.CoreDict):
+  def __init__(self, manager=None):
+    core.CoreDict.__init__(self)
+    self.manager = manager
+    self.log = self.manager.log if self.manager else None
+
+  def get(self, intrusion_prevention=True, firewall=True, integrity_monitoring=True, log_inspection=True, web_reputation=True, application_types=True):
+    """
+    Get all of the rules from Deep Security
+    """
+    # determine which rules to get from the Manager()
+    rules_to_get = {
+      'DPIRuleRetrieveAll': intrusion_prevention,
+      'firewallRuleRetrieveAll': firewall,
+      'integrityRuleRetrieveAll': integrity_monitoring,
+      'logInspectionRuleRetrieveAll': log_inspection,
+      'applicationTypeRetrieveAll': application_types,
+      }
+
+    for call, get in rules_to_get.items():
+      rule_key = '{}'.format(call.replace('RetrieveAll', ''))
+      self[rule_key] = core.CoreDict()
+
+      if get:
+        soap_call = self.manager._get_request_format(call=call)
+        if call == 'DPIRuleRetrieveAll':
+          self.log("Calling {}. This may take 15-30 seconds as the call returns a substantial amount of data".format(call), level='warning')
+
+        response = self.manager._request(soap_call)
+        if response and response['status'] == 200:
+          if not type(response['data']) == type([]): response['data'] = [response['data']]
+          for i, rule in enumerate(response['data']):
+            rule_obj = Rule(self.manager, rule, self.log)
+            if rule_obj:
+              rule_id = '{}-{: >10}'.format(rule_key, i)
+              if 'TBUID' in dir(rule_obj): rule_id = rule_obj.TBUID
+              elif 'ID' in dir(rule_obj): rule_id = rule_obj.ID
+              self[rule_key][rule_id] = rule_obj
+
+    return len(self)    
+
 class Policy(core.CoreObject):
   def __init__(self, manager=None, api_response=None, log_func=None):
     self.manager = manager
