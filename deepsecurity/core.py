@@ -405,6 +405,12 @@ class CoreObject(object):
       if 'has_key' in dir(v) and v.has_key(u'@xsi:nil') and v[u'@xsi:nil'] == u'true':
         val = None
 
+      new_key = k
+      if 'manager' in dir(self) and self.manager:
+        new_key = self.manager._get_term(k)
+
+      log_func("Setting property on object, requested key {} converted to {}".format(k, new_key), level='debug')
+
       try:
         setattr(self, k, val)
       except Exception, err:

@@ -91,6 +91,7 @@ class Computers(core.CoreDict):
         computer_obj = Computer(self.manager, computer, self.log)
         if computer_obj:
           self[computer_obj.ID] = computer_obj
+          self.log("Added Computer {}".format(computer_obj.ID), level='debug')
           
           try:
             # add this computer to any appropriate groups on the Manager()
@@ -153,6 +154,7 @@ class ComputerGroups(core.CoreDict):
         computer_group_obj = ComputerGroup(self.manager, group, self.log)
         if computer_group_obj:
           self[computer_group_obj.ID] = computer_group_obj
+          self.log("Added ComputerGroup {}".format(computer_group_obj.ID), level='debug')
 
     return len(self)
 

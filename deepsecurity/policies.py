@@ -25,6 +25,7 @@ class Policies(core.CoreDict):
         policy_obj = Policy(self.manager, policy, self.log)
         if policy_obj:
           self[policy_obj.ID] = policy_obj
+          self.log("Added Policy {}".format(policy_obj.ID), level='debug')
 
     return len(self)
 
@@ -66,6 +67,7 @@ class Rules(core.CoreDict):
               if 'TBUID' in dir(rule_obj): rule_id = rule_obj.TBUID
               elif 'ID' in dir(rule_obj): rule_id = rule_obj.ID
               self[rule_key][rule_id] = rule_obj
+              self.log("Added Rule {} from call {}".format(rule_id, call), level='debug')
 
     return len(self)    
 
