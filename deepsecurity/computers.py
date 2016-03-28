@@ -44,16 +44,16 @@ class Computers(core.CoreDict):
       if external_id:
         call['data'] = {
           'externalFilter': {
-            'hostExternalid': external_id,
-            'hostGroupExternalid': None,
+            'hostExternalID': external_id,
+            'hostGroupExternalID': None,
           },
           'hostDetailLevel': detail_level
         }
       elif external_group_id:
         call['data'] = {
           'externalFilter': {
-            'hostExternalid': None,
-            'hostGroupExternalid': external_group_id,
+            'hostExternalID': None,
+            'hostGroupExternalID': external_group_id,
           },
           'hostDetailLevel': detail_level
         }
@@ -76,9 +76,9 @@ class Computers(core.CoreDict):
       if computer_id:
         call['data'] = {
             'hostFilter': {
-              'hostGroupid': None,
-              'hostid': computer_id,
-              'securityProfileid': None,
+              'hostGroupID': None,
+              'hostID': computer_id,
+              'securityProfileID': None,
               'type': 'ALL_HOSTS',
             },
             'hostDetailLevel': detail_level
@@ -86,9 +86,9 @@ class Computers(core.CoreDict):
       elif computer_group_id:
         call['data'] = {
             'hostFilter': {
-              'hostGroupid': computer_group_id,
-              'hostid': None,
-              'securityProfileid': None,
+              'hostGroupID': computer_group_id,
+              'hostID': None,
+              'securityProfileID': None,
               'type': 'ALL_HOSTS',
             },
             'hostDetailLevel': detail_level
@@ -96,9 +96,9 @@ class Computers(core.CoreDict):
       elif policy_id:
         call['data'] = {
             'hostFilter': {
-              'hostGroupid': None,
-              'hostid': None,
-              'securityProfileid': policy_id,
+              'hostGroupID': None,
+              'hostID': None,
+              'securityProfileID': policy_id,
               'type': 'ALL_HOSTS',
             },
             'hostDetailLevel': detail_level
@@ -106,14 +106,14 @@ class Computers(core.CoreDict):
       else:
         call['data'] = {
             'hostFilter': {
-              'hostGroupid': None,
-              'hostid': None,
-              'securityProfileid': None,
+              'hostGroupID': None,
+              'hostID': None,
+              'securityProfileID': None,
               'type': 'ALL_HOSTS',
             },
             'hostDetailLevel': detail_level
           }
-          
+
     response = self.manager._request(call)
     
     if response and response['status'] == 200:
@@ -121,6 +121,8 @@ class Computers(core.CoreDict):
       for computer in response['data']:
         computer_obj = Computer(self.manager, computer, self.log)
         if computer_obj:
+          print ">>> {}".format(dir(computer_obj))
+          print computer_obj
           self[computer_obj.id] = computer_obj
           self.log("Added Computer {}".format(computer_obj.id), level='debug')
           

@@ -241,8 +241,11 @@ class CoreApi(object):
             full_data = xmltodict.parse(result['raw'])
             if full_data.has_key('soapenv:Envelope') and full_data['soapenv:Envelope'].has_key('soapenv:Body'):
               result['data'] = full_data['soapenv:Envelope']['soapenv:Body']
-              if result['data'].has_key('{}Response'.format(request['call'])) and result['data']['{}Response'.format(request['call'])].has_key('{}Return'.format(request['call'])):
-                result['data'] = result['data']['{}Response'.format(request['call'])]['{}Return'.format(request['call'])]
+              if result['data'].has_key('{}Response'.format(request['call'])):
+                if result['data']['{}Response'.format(request['call'])].has_key('{}Return'.format(request['call'])):
+                  result['data'] = result['data']['{}Response'.format(request['call'])]['{}Return'.format(request['call'])]
+                else:
+                  result['data'] = result['data']['{}Response'.format(request['call'])]
             else:
               result['data'] = full_data
         except Exception, xmltodict_err:
