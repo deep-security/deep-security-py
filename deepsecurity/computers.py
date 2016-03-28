@@ -12,14 +12,14 @@ class Computers(core.CoreDict):
     self.manager = manager
     self.log = self.manager.log if self.manager else None
 
-  def get(self, detail_level='HIGH', computer_id=None, computer_group_id=None, security_profile_id=None, computer_name=None, external_id=None, external_group_id=None):
+  def get(self, detail_level='HIGH', computer_id=None, computer_group_id=None, policy_id=None, computer_name=None, external_id=None, external_group_id=None):
     """
     Get all or a filtered set of computers from Deep Security
 
     Can filter by:
       computer_id
       computer_group_id
-      security_profile_id
+      policy_id
       computer_name (specific or starts with using name*)
       external_id
       external_group_id
@@ -30,7 +30,7 @@ class Computers(core.CoreDict):
       computer_name
       computer_id
       computer_group_id
-      security_profile_id
+      policy_id
 
     detail_level can be set to one of ['HIGH', 'MEDIUM', 'LOW']
     """
@@ -44,20 +44,20 @@ class Computers(core.CoreDict):
       if external_id:
         call['data'] = {
           'externalFilter': {
-            'hostExternalID': external_id,
-            'hostGroupExternalID': None,
+            'hostExternalid': external_id,
+            'hostGroupExternalid': None,
           },
           'hostDetailLevel': detail_level
         }
       elif external_group_id:
         call['data'] = {
           'externalFilter': {
-            'hostExternalID': None,
-            'hostGroupExternalID': external_group_id,
+            'hostExternalid': None,
+            'hostGroupExternalid': external_group_id,
           },
           'hostDetailLevel': detail_level
         }
-    if computer_name:
+    elif computer_name:
       if computer_name.endswith('*'):
         call = self.manager._get_request_format(call='hostDetailRetrieveByNameStartsWith')
         call['data'] = {
@@ -73,16 +73,47 @@ class Computers(core.CoreDict):
     else:
       # get with no arguments = hostRetrieve() with ALL_HOSTS
       call = self.manager._get_request_format(call='hostDetailRetrieve')
-      call['data'] = {
-          'hostFilter': {
-            'hostGroupID': None,
-            'hostID': None,
-            'securityProfileID': None,
-            'type': 'ALL_HOSTS',
-          },
-          'hostDetailLevel': detail_level
-        }
-
+      if computer_id:
+        call['data'] = {
+            'hostFilter': {
+              'hostGroupid': None,
+              'hostid': computer_id,
+              'securityProfileid': None,
+              'type': 'ALL_HOSTS',
+            },
+            'hostDetailLevel': detail_level
+          }
+      elif computer_group_id:
+        call['data'] = {
+            'hostFilter': {
+              'hostGroupid': computer_group_id,
+              'hostid': None,
+              'securityProfileid': None,
+              'type': 'ALL_HOSTS',
+            },
+            'hostDetailLevel': detail_level
+          }
+      elif policy_id:
+        call['data'] = {
+            'hostFilter': {
+              'hostGroupid': None,
+              'hostid': None,
+              'securityProfileid': policy_id,
+              'type': 'ALL_HOSTS',
+            },
+            'hostDetailLevel': detail_level
+          }
+      else:
+        call['data'] = {
+            'hostFilter': {
+              'hostGroupid': None,
+              'hostid': None,
+              'securityProfileid': None,
+              'type': 'ALL_HOSTS',
+            },
+            'hostDetailLevel': detail_level
+          }
+          
     response = self.manager._request(call)
     
     if response and response['status'] == 200:
@@ -90,26 +121,26 @@ class Computers(core.CoreDict):
       for computer in response['data']:
         computer_obj = Computer(self.manager, computer, self.log)
         if computer_obj:
-          self[computer_obj.ID] = computer_obj
-          self.log("Added Computer {}".format(computer_obj.ID), level='debug')
+          self[computer_obj.id] = computer_obj
+          self.log("Added Computer {}".format(computer_obj.id), level='debug')
           
           try:
             # add this computer to any appropriate groups on the Manager()
-            if 'hostGroupID' in dir(computer_obj) and computer_obj.hostGroupID:
-              if self.manager.computer_groups and self.manager.computer_groups.has_key(computer_obj.hostGroupID):
-                self.manager.computer_groups[computer_obj.hostGroupID].computers[computer_obj.ID] = computer_obj
-                self.log("Added Computer {} to ComputerGroup {}".format(computer_obj.ID, computer_obj.hostGroupID), level='debug')
-          except Exception, hostGroupID_err:
-            self.log("Could not add Computer {} to ComputerGroup".format(computer_obj.ID), err=hostGroupID_err)
+            if 'hostGroupid' in dir(computer_obj) and computer_obj.hostGroupid:
+              if self.manager.computer_groups and self.manager.computer_groups.has_key(computer_obj.hostGroupid):
+                self.manager.computer_groups[computer_obj.hostGroupid].computers[computer_obj.id] = computer_obj
+                self.log("Added Computer {} to ComputerGroup {}".format(computer_obj.id, computer_obj.hostGroupid), level='debug')
+          except Exception, hostGroupid_err:
+            self.log("Could not add Computer {} to ComputerGroup".format(computer_obj.id), err=hostGroupid_err)
 
           try: 
             # add this computer to any appropriate policies on the Manager()
-            if 'securityProfileID' in dir(computer_obj) and computer_obj.securityProfileID:
-              if self.manager.policies and self.manager.policies.has_key(computer_obj.securityProfileID):
-                self.manager.policies[computer_obj.securityProfileID].computers[computer_obj.ID] = computer_obj
-                self.log("Added Computer {} to Policy {}".format(computer_obj.ID, computer_obj.securityProfileID), level='debug')
-          except Exception, securityProfileID_err:
-            self.log("Could not add Computer {} to Policy".format(computer_obj.ID), err=securityProfileID_err)
+            if 'securityProfileid' in dir(computer_obj) and computer_obj.securityProfileid:
+              if self.manager.policies and self.manager.policies.has_key(computer_obj.securityProfileid):
+                self.manager.policies[computer_obj.securityProfileid].computers[computer_obj.id] = computer_obj
+                self.log("Added Computer {} to Policy {}".format(computer_obj.id, computer_obj.securityProfileid), level='debug')
+          except Exception, securityProfileid_err:
+            self.log("Could not add Computer {} to Policy".format(computer_obj.id), err=securityProfileid_err)
 
     return len(self)
 
@@ -141,7 +172,7 @@ class ComputerGroups(core.CoreDict):
       elif group_id:
         call = self.manager._get_request_format(call='hostGroupRetrieve')
         call['data'] = {
-          'ID': '{}'.format(group_id)
+          'id': '{}'.format(group_id)
           }
     else:
       call = self.manager._get_request_format(call='hostGroupRetrieveAll')
@@ -153,8 +184,8 @@ class ComputerGroups(core.CoreDict):
       for group in response['data']:
         computer_group_obj = ComputerGroup(self.manager, group, self.log)
         if computer_group_obj:
-          self[computer_group_obj.ID] = computer_group_obj
-          self.log("Added ComputerGroup {}".format(computer_group_obj.ID), level='debug')
+          self[computer_group_obj.id] = computer_group_obj
+          self.log("Added ComputerGroup {}".format(computer_group_obj.id), level='debug')
 
     return len(self)
 
@@ -167,37 +198,37 @@ class Computer(core.CoreObject):
     """
     Send the latest set of events to this computer's Manager
     """
-    return self.manager.request_events_from_computer(self.ID)
+    return self.manager.request_events_from_computer(self.id)
 
   def clear_alerts_and_warnings(self):
     """
     Clear any alerts or warnings for the computer
     """
-    return self.manager.clear_alerts_and_warnings_from_computers(self.ID)
+    return self.manager.clear_alerts_and_warnings_from_computers(self.id)
 
   def scan_for_malware(self):
     """
     Request a malware scan be run on the computer
     """
-    return self.manager.scan_computers_for_malware(self.ID)
+    return self.manager.scan_computers_for_malware(self.id)
 
   def scan_for_integrity(self):
     """
     Request an integrity scan be run on the computer
     """
-    return self.manager.scan_computers_for_integrity(self.ID)
+    return self.manager.scan_computers_for_integrity(self.id)
 
   def scan_for_recommendations(self):
     """
     Request a recommendation scan be run on the computer
     """
-    return self.manager.scan_computers_for_recommendations(self.ID)       
+    return self.manager.scan_computers_for_recommendations(self.id)       
 
   def assign_policy(self, policy_id):
     """
     Assign the specified policy to the computer
     """
-    return self.manager.assign_policy_to_computers(policy_id, self.ID)
+    return self.manager.assign_policy_to_computers(policy_id, self.id)
 
 class ComputerGroup(core.CoreObject):
   def __init__(self, manager=None, api_response=None, log_func=None):

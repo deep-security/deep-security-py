@@ -408,8 +408,6 @@ class CoreObject(object):
 
       new_key = translation.Terms.get(k)
 
-      log_func("Setting property key {} => {} on object".format(k, new_key), level='debug')
-
       try:
         setattr(self, new_key, val)
       except Exception, err:

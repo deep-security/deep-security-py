@@ -24,8 +24,8 @@ class Policies(core.CoreDict):
       for policy in response['data']:
         policy_obj = Policy(self.manager, policy, self.log)
         if policy_obj:
-          self[policy_obj.ID] = policy_obj
-          self.log("Added Policy {}".format(policy_obj.ID), level='debug')
+          self[policy_obj.id] = policy_obj
+          self.log("Added Policy {}".format(policy_obj.id), level='debug')
 
     return len(self)
 
@@ -64,8 +64,8 @@ class Rules(core.CoreDict):
             rule_obj = Rule(self.manager, rule, self.log)
             if rule_obj:
               rule_id = '{}-{: >10}'.format(rule_key, i)
-              if 'TBUID' in dir(rule_obj): rule_id = rule_obj.TBUID
-              elif 'ID' in dir(rule_obj): rule_id = rule_obj.ID
+              if 'tbuid' in dir(rule_obj): rule_id = rule_obj.tbuid
+              elif 'id' in dir(rule_obj): rule_id = rule_obj.id
               self[rule_key][rule_id] = rule_obj
               self.log("Added Rule {} from call {}".format(rule_id, call), level='debug')
 
@@ -84,15 +84,15 @@ class Policy(core.CoreObject):
     Flatten the various module rules into a master list
     """
     for rule_type in [
-      'DPIRuleIDs',
-      'firewallRuleIDs',
-      'integrityRuleIDs',
-      'logInspectionRuleIDs',
+      'intrusion_prevention_rule_ids',
+      'firewall_rule_ids',
+      'integrity_monitoring_rule_ids',
+      'log_inspection_rule_ids',
       ]:
       rules = getattr(self, rule_type)
       if rules:
         for rule in rules['item']:
-          self.rules['{}-{}'.format(rule_type.replace('IDs', ''), rule)] = None
+          self.rules['{}-{}'.format(rule_type.replace('rule_ids', ''), rule)] = None
 
 class Rule(core.CoreObject):
   def __init__(self, manager=None, api_response=None, log_func=None, rule_type=None):
