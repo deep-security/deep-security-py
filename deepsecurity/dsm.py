@@ -1,5 +1,6 @@
 # standard library
 import datetime
+import re
 
 # 3rd party libraries
 
@@ -30,18 +31,6 @@ class Manager(core.CoreApi):
     self.computers = computers.Computers(manager=self)
     self.policies = policies.Policies(manager=self)
     self.rules = policies.Rules(manager=self)
-
-    self._term_map = {
-      'DPI': { 'full': 'intrusion_prevention', 'short': 'ips' },
-      'firewall': { 'full': 'firewall', 'short': 'fw' },
-      'integrity': { 'full': 'integrity_monitoring', 'short': 'im' },
-      'logInspection': { 'full': 'log_inspection', 'short': 'li' },
-      'webreputation': { 'full': 'content_filtering', 'short': 'cf' },
-      'antimalware': { 'full': 'anti_malware', 'short': 'am' },
-      'host': { 'full': 'computer' },
-      'securityProfile': { 'full': 'policy' },
-      'AnitMalware': { 'full': 'anti_malware', 'short': 'am' },
-      }
 
   def __del__(self):
     """
@@ -118,23 +107,6 @@ class Manager(core.CoreApi):
     """
     self.sign_out()
     self.sign_in()
-
-  def _get_term(self, api_term, short=False):
-    """
-    Map an API term or name to a new, logical one
-    """
-    new_term = api_term
-
-    for k, v in self._term_map.items():
-      if k.lower() in api_term.lower():
-        if short and self._term_map[k].has_key('short'):
-          new_term = api_term.replace(k.lower(), self._term_map[k]['short'])
-          break
-        else:
-          new_term = api_term.replace(k.lower(), self._term_map[k]['full'])
-          break
-    
-    return new_term
   
   def sign_in(self):
     """
