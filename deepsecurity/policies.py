@@ -70,7 +70,26 @@ class Rules(core.CoreDict):
               self[rule_key][rule_id] = rule_obj
               self.log("Added Rule {} from call {}".format(rule_id, call), level='debug')
 
-    return len(self)    
+    return len(self)
+
+class IPLists(core.CoreDict):
+  def __init__(self, manager=None):
+    core.CoreDict.__init__(self)
+    self.manager = manager
+    self.log = self.manager.log if self.manager else None
+
+  def get(self):
+    """
+    Get all of the IP Lists from Deep Security
+    """
+    soap_call = self.manager._get_request_format(call='IPListRetrieveAll')
+    response = self.manager._request(soap_call)
+    if response and response['status'] == 200:
+      for ip_list in response['data']:
+        ip_list_obj = IPList(self.manager, ip_list, self.log)
+        self[ip_list_obj.id] = ip_list_obj
+    
+    return len(self)
 
 class Policy(core.CoreObject):
   def __init__(self, manager=None, api_response=None, log_func=None):
@@ -100,4 +119,21 @@ class Rule(core.CoreObject):
     self.manager = manager
     self.rule_type = rule_type
     self.policies = core.CoreDict()
-    if api_response: self._set_properties(api_response, log_func)    
+    if api_response: self._set_properties(api_response, log_func)  
+
+class IPList(core.CoreObject):
+  def __init__(self, manager=None, api_response=None, log_func=None, rule_type=None):
+    self.manager = manager
+    self.rule_type = rule_type
+    self.addresses = []
+    if api_response: self._set_properties(api_response, log_func)
+    self._split_items()
+
+  def _split_items(self):
+    """
+    Split the individual items in an IP List into entries
+    """
+    if getattr(self, 'items') and "\n" in self.items:
+      self.addresses = self.items.split('\n')
+    else:
+      self.addresses.append(self.items.strip())        

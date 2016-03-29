@@ -32,6 +32,7 @@ class Manager(core.CoreApi):
     self.computers = computers.Computers(manager=self)
     self.policies = policies.Policies(manager=self)
     self.rules = policies.Rules(manager=self)
+    self.ip_lists = policies.IPLists(manager=self)
 
   def __del__(self):
     """
