@@ -8,6 +8,7 @@ import re
 import core
 import computers
 import policies
+import translation
 
 class Manager(core.CoreApi):
   def __init__(self,
@@ -324,3 +325,38 @@ class Manager(core.CoreApi):
     if response and response['status'] == 200: result = True
     
     return result
+
+  def get_rule_recommendations_for_computer(self, computer_id):
+    """
+    Get the recommended rule set (applied or not) for the specified computer
+    """
+    results = {
+      'total_recommedations': 0
+      }
+
+    rules_types = { # values align with rule type ENUM
+      'DPIRuleRetrieveAll': 2,
+      'firewallRuleRetrieveAll': 3,
+      'integrityRuleRetrieveAll': 4,
+      'logInspectionRuleRetrieveAll': 5,
+      'applicationTypeRetrieveAll': 1,
+      }
+
+    for rule_type, type_enum_val in rules_types.items():
+      rule_key = translation.Terms.get(rule_type).replace('_retrieve_all', '').replace('_rule', '')
+      results[rule_key] = []
+
+      soap_call = self._get_request_format(call='hostRecommendationRuleIDsRetrieve')
+      soap_call['data'] = {
+        'hostID': computer_id,
+        'type': type_enum_val,
+        'onlyunassigned': False,
+        }
+      response = self._request(soap_call)
+      if response and response['status'] == 200:
+        # response contains the internal rule ID
+        for internal_rule_id in response['data']:
+          results[rule_key].append(internal_rule_id)
+          results['total_recommedations'] += 1
+
+    return results

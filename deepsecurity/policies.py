@@ -51,9 +51,6 @@ class Rules(core.CoreDict):
 
     for call, get in rules_to_get.items():
       rule_key = translation.Terms.get(call).replace('_retrieve_all', '').replace('_rule', '')
-      print ">>> {}".format(call)
-      print "    {}".format(translation.Terms.get(call))
-      print "    {}".format(rule_key)
       self[rule_key] = core.CoreDict()
 
       if get:
@@ -68,8 +65,8 @@ class Rules(core.CoreDict):
             rule_obj = Rule(self.manager, rule, self.log, rule_type=rule_key)
             if rule_obj:
               rule_id = '{}-{: >10}'.format(rule_key, i)
-              if 'tbuid' in dir(rule_obj): rule_id = rule_obj.tbuid
-              elif 'id' in dir(rule_obj): rule_id = rule_obj.id
+              if 'id' in dir(rule_obj): rule_id = rule_obj.id
+              elif 'tbuid' in dir(rule_obj): rule_id = rule_obj.tbuid
               self[rule_key][rule_id] = rule_obj
               self.log("Added Rule {} from call {}".format(rule_id, call), level='debug')
 

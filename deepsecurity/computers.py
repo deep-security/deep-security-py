@@ -121,26 +121,24 @@ class Computers(core.CoreDict):
       for computer in response['data']:
         computer_obj = Computer(self.manager, computer, self.log)
         if computer_obj:
-          print ">>> {}".format(dir(computer_obj))
-          print computer_obj
           self[computer_obj.id] = computer_obj
           self.log("Added Computer {}".format(computer_obj.id), level='debug')
           
           try:
             # add this computer to any appropriate groups on the Manager()
-            if 'hostGroupid' in dir(computer_obj) and computer_obj.hostGroupid:
-              if self.manager.computer_groups and self.manager.computer_groups.has_key(computer_obj.hostGroupid):
-                self.manager.computer_groups[computer_obj.hostGroupid].computers[computer_obj.id] = computer_obj
-                self.log("Added Computer {} to ComputerGroup {}".format(computer_obj.id, computer_obj.hostGroupid), level='debug')
+            if 'computer_group_id' in dir(computer_obj) and computer_obj.computer_group_id:
+              if self.manager.computer_groups and self.manager.computer_groups.has_key(computer_obj.computer_group_id):
+                self.manager.computer_groups[computer_obj.computer_group_id].computers[computer_obj.id] = computer_obj
+                self.log("Added Computer {} to ComputerGroup {}".format(computer_obj.id, computer_obj.computer_group_id), level='debug')
           except Exception, hostGroupid_err:
             self.log("Could not add Computer {} to ComputerGroup".format(computer_obj.id), err=hostGroupid_err)
 
           try: 
             # add this computer to any appropriate policies on the Manager()
-            if 'securityProfileid' in dir(computer_obj) and computer_obj.securityProfileid:
-              if self.manager.policies and self.manager.policies.has_key(computer_obj.securityProfileid):
-                self.manager.policies[computer_obj.securityProfileid].computers[computer_obj.id] = computer_obj
-                self.log("Added Computer {} to Policy {}".format(computer_obj.id, computer_obj.securityProfileid), level='debug')
+            if 'policy_id' in dir(computer_obj) and computer_obj.policy_id:
+              if self.manager.policies and self.manager.policies.has_key(computer_obj.policy_id):
+                self.manager.policies[computer_obj.policy_id].computers[computer_obj.id] = computer_obj
+                self.log("Added Computer {} to Policy {}".format(computer_obj.id, computer_obj.policy_id), level='debug')
           except Exception, securityProfileid_err:
             self.log("Could not add Computer {} to Policy".format(computer_obj.id), err=securityProfileid_err)
 
@@ -194,6 +192,7 @@ class ComputerGroups(core.CoreDict):
 class Computer(core.CoreObject):
   def __init__(self, manager=None, api_response=None, log_func=None):
     self.manager = manager
+    self.recommened_rules = None
     if api_response: self._set_properties(api_response, log_func)
 
   def send_events(self):
@@ -231,6 +230,13 @@ class Computer(core.CoreObject):
     Assign the specified policy to the computer
     """
     return self.manager.assign_policy_to_computers(policy_id, self.id)
+
+  def get_recommended_rules(self):
+    """
+    Recommend a set of rules to apply to the computer
+    """
+    self.recommened_rules = self.manager.get_rule_recommendations_for_computer(self.id)
+    return self.recommened_rules['total_recommedations']
 
 class ComputerGroup(core.CoreObject):
   def __init__(self, manager=None, api_response=None, log_func=None):
@@ -277,4 +283,15 @@ class ComputerGroup(core.CoreObject):
     """
     Assign the specified policy to all computers in this group
     """
-    return self.manager.assign_policy_to_computers(policy_id, self.computers.keys())    
+    return self.manager.assign_policy_to_computers(policy_id, self.computers.keys())
+
+  def get_recommended_rules(self):
+    """
+    Recommend a set of rules to apply for each computer in this group
+    """
+    results = {}
+
+    for computer_id in self.computers.keys():
+      results[computer_id] = self.computers[computer_id].get_recommended_rules()
+
+    return results
