@@ -80,6 +80,11 @@ class Terms:
     'firewallruleids': 'firewall_rule_ids',
     'overallstatus': 'overall_status',
     'firewallruleids': 'firewall_rule_ids',
+    'dpiruleretrieveall': 'intrusion_prevention_rule_retrieve_all',
+    'firewallruleretrieveall': 'firewall_rule_retrieve_all',
+    'integrityruleretrieveall': 'integrity_monitoring_rule_retrieve_all',
+    'loginspectionruleretrieveall': 'log_inspection_rule_retrieve_all',
+    'applicationtyperetrieveall': 'application_type_retrieve_all',
     }
 
   @classmethod
