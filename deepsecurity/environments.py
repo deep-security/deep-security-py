@@ -12,7 +12,17 @@ class CloudAccounts(core.CoreDict):
     self.manager = manager
     self.log = self.manager.log if self.manager else None
 
-  def get(self): pass
+  def get(self):
+    """
+    Get a list of all of the current configured cloud accounts
+    """
+    call = self.manager._get_request_format(api=self.manager.API_TYPE_REST, call='cloudaccounts')
+    response = self.manager._request(call)
+    if response and response['status'] == 200:
+      if response['data'] and response['data'].has_key('cloudAccountListing') and response['data']['cloudAccountListing'].has_key('cloudAccounts'):
+        for cloud_account in response['data']['cloudAccountListing']['cloudAccounts']:
+          cloud_account_obj = CloudAccount(self.manager, cloud_account, self.log)
+          self[cloud_account_obj.cloud_account_id] = cloud_account_obj
 
   def add(self): pass
 

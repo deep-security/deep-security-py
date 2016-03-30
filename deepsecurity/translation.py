@@ -85,6 +85,10 @@ class Terms:
     'integrityruleretrieveall': 'integrity_monitoring_rule_retrieve_all',
     'loginspectionruleretrieveall': 'log_inspection_rule_retrieve_all',
     'applicationtyperetrieveall': 'application_type_retrieve_all',
+    'cloudaccountid': 'cloud_account_id',
+    'realtimesynchronization': 'real_time_synchronization',
+    'cloudregion': 'cloud_region',
+    'cloudtype': 'cloud_type',
     }
 
   @classmethod
