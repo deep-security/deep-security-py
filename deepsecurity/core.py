@@ -412,6 +412,9 @@ class CoreObject(object):
 
       new_key = translation.Terms.get(k)
 
+      # make sure any integer IDs are stored as an int
+      if new_key == 'id' and re.search('^\d+$', v.strip()): val = int(v)
+
       try:
         setattr(self, new_key, val)
       except Exception, err:
