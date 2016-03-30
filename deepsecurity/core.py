@@ -212,6 +212,7 @@ class CoreApi(object):
       url_request = urllib2.Request(url, data=json.dumps(request['data']), headers=headers)
       request_type = 'POST'
       self.log("Making a REST POST request with headers {}".format(headers), level='debug')
+      self.log("    and data {}".format(request['data']), level='debug')
     else:
       # GET
       url_request = urllib2.Request(url, headers=headers)
