@@ -389,6 +389,13 @@ class CoreDict(dict):
                   break # and move on to the new kwarg
                 else:
                   item_matches = False
+              elif type(attr_to_check) == type([]):
+                # check for the match in the list
+                if match_attr_val in attr_to_check:
+                  item_matches = True
+                  break # and move on to the new kwarg
+                else:
+                  item_matches = False
               else:
                 # object comparison
                 if attr_to_check == match_attr_val:

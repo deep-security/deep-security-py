@@ -189,7 +189,7 @@ class Terms:
     'minmanagerversion': 'min_manager_version',
     'policies': 'policies',
     'raisealert ': 'raise_alert ', 
-    'allowonchange': 'allow_on_change'
+    'allowonchange': 'allow_on_change',
     'protocolicmp': 'protocol_icmp',
     'protocolportbased': 'protocol_port_based',
     'protocoltype': 'protocol_type',
