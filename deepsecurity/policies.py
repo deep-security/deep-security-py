@@ -64,7 +64,7 @@ class Rules(core.CoreDict):
           for i, rule in enumerate(response['data']):
             rule_obj = Rule(self.manager, rule, self.log, rule_type=rule_key)
             if rule_obj:
-              if rule_key == 'intrusion_prevention' and rule_obj.cve_numbers::
+              if rule_key == 'intrusion_prevention' and rule_obj.cve_numbers:
                 rule_obj.cve_numbers = rule_obj.cve_numbers.split(', ')
                 if type(rule_obj.cve_numbers) in [type(''), type(u'')]: rule_obj.cve_numbers = [ rule_obj.cve_numbers ]
                 
