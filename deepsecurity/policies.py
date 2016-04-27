@@ -118,6 +118,28 @@ class Policy(core.CoreObject):
         for rule in rules['item']:
           self.rules['{}-{}'.format(rule_type.replace('rule_ids', ''), rule)] = None
 
+  def save(self):
+    """
+    Save any changes made to the policy
+    """
+    result = False
+
+    soap_call = self.manager._get_request_format(call='securityProfileSave')
+    soap_call['data'] = { 'sp': self.to_dict() }
+
+    if soap_call['data']['sp'].has_key('manager'):
+      del(soap_call['data']['sp']['manager'])
+
+    response = self.manager._request(soap_call)
+    if response['status'] == 200:
+      result = True
+    else:
+      result = False
+      if 'log' in dir(self):
+        self.log("Could not save the policy. Returned: {}".format(response), level='error')
+
+    return result
+
 class Rule(core.CoreObject):
   def __init__(self, manager=None, api_response=None, log_func=None, rule_type=None):
     self.manager = manager

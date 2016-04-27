@@ -293,6 +293,9 @@ class CoreApi(object):
     </SOAP-ENV:Envelope>
     """.format(data).strip()
 
+    # convert any nil values to the proper format
+    soap_xml = re.sub(r'<([^>]+)></\1>', r'<\1 xsi:nil="true" />', soap_xml)
+
     return soap_xml
 
   def log(self, message='', err=None, level='info'):
@@ -433,3 +436,22 @@ class CoreObject(object):
       except Exception, err:
         if log_func:
           log_func("Could not set property {} to value {} for object {}".format(k, v, s))
+          try:
+            setattr(self, log, log_func)
+          except: pass
+
+  def to_dict(self):
+    """
+    Convert the object properties to API keypairs
+    """
+    result = {}
+
+    api_properties = translation.Terms.api_to_new.values()
+
+    for p in dir(self):
+      if p in api_properties:
+        key = translation.Terms.get_reverse(p)
+        val = getattr(self, p)
+        result[key] = val
+
+    return result
