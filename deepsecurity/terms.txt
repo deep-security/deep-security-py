@@ -430,3 +430,8 @@ wasEntity
 webReputationEventID
 webReputationEvents
 webReputationStatus
+DPIRuleRetrieveAll
+firewallRuleRetrieveAll
+integrityRuleRetrieveAll
+logInspectionRuleRetrieveAll
+applicationTypeRetrieveAll
