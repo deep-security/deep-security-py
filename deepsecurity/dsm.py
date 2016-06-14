@@ -48,7 +48,8 @@ class Manager(core.CoreApi):
     """
     Return a better string representation
     """
-    return "Manager <{}:{}>".format(self.hostname, self.port)
+    dsm_port = ":{}".format(self.port) if self.port else ""
+    return "Manager <{}{}>".format(self.hostname, dsm_port)
 
   # *******************************************************************
   # properties
