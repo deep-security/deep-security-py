@@ -102,8 +102,9 @@ class Manager(core.CoreApi):
     """
     Set the API endpoints based on the current configuration
     """
-    self._rest_api_endpoint = "https://{}:{}/rest".format(self.hostname, self.port)
-    self._soap_api_endpoint = "https://{}:{}/webservice/Manager".format(self.hostname, self.port)
+    dsm_port = ":{}".format(self.port) if self.port else "" # allow for endpoints with no port specified
+    self._rest_api_endpoint = "https://{}{}/rest".format(self.hostname, dsm_port)
+    self._soap_api_endpoint = "https://{}{}/webservice/Manager".format(self.hostname, dsm_port)
 
   def _reset_session(self):
     """
