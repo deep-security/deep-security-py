@@ -68,7 +68,7 @@ class Manager(core.CoreApi):
 
   @port.setter
   def port(self, value):
-    self._port = int(value)
+    self._port = int(value) if value else None
     self._set_endpoints()
 
   @property
