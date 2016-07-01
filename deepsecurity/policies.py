@@ -25,8 +25,11 @@ class Policies(core.CoreDict):
       for policy in response['data']:
         policy_obj = Policy(self.manager, policy, self.log)
         if policy_obj:
-          self[policy_obj.id] = policy_obj
-          self.log("Added Policy {}".format(policy_obj.id), level='debug')
+          try:
+            self[policy_obj.id] = policy_obj
+            self.log("Added Policy {}".format(policy_obj.id), level='debug')
+          except Exception, err:
+            self.log("Could not add Policy {}".format(policy_obj), level='warning', err=err)
 
     return len(self)
 
@@ -101,7 +104,7 @@ class Policy(core.CoreObject):
     self.computers = core.CoreDict()
     self.rules = core.CoreDict()
     if api_response: self._set_properties(api_response, log_func)
-    self._flatten_rules()
+    #self._flatten_rules()
 
   def _flatten_rules(self):
     """

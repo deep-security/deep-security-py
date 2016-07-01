@@ -201,7 +201,7 @@ class CoreApi(object):
       url_request = urllib2.Request(url, data=data, headers=headers)
       request_type = 'POST'
       self.log("Making a SOAP request with headers {}".format(headers), level='debug')
-      self.log("   and data {}".format(data), level='debug')
+      self.log(u"   and data {}".format(data), level='debug')
     elif request['call'] == 'authentication/logout':
       url_request = urllib2.Request(url, headers=headers)
       setattr(url_request, 'get_method', lambda: 'DELETE') # make this request use the DELETE HTTP verb
@@ -212,7 +212,7 @@ class CoreApi(object):
       url_request = urllib2.Request(url, data=json.dumps(request['data']), headers=headers)
       request_type = 'POST'
       self.log("Making a REST POST request with headers {}".format(headers), level='debug')
-      self.log("    and data {}".format(request['data']), level='debug')
+      self.log(u"    and data {}".format(request['data']), level='debug')
     else:
       # GET
       url_request = urllib2.Request(url, headers=headers)
@@ -270,7 +270,7 @@ class CoreApi(object):
     if not type(d) == type({}): return d
     new_d = d.copy()
     for k,v in d.items():
-      new_key = "{}:{}".format(prefix, k)
+      new_key = u"{}:{}".format(prefix, k)
       new_v = v
       if type(v) == type({}): new_v = self._prefix_keys(prefix, v)
       new_d[new_key] = new_v 
@@ -283,7 +283,7 @@ class CoreApi(object):
     Prepare the complete XML SOAP envelope
     """
     data = xmltodict.unparse(self._prefix_keys('ns1', { call: details }), pretty=False, full_document=False)
-    soap_xml = """
+    soap_xml = u"""
     <?xml version="1.0" encoding="UTF-8"?>
     <SOAP-ENV:Envelope xmlns:ns0="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="urn:Manager" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
       <SOAP-ENV:Header/>
