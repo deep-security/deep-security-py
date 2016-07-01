@@ -229,6 +229,7 @@ class CoreApi(object):
     result = {
       'status': response.getcode() if response else None,
       'raw': response.read() if response else None,
+      'headers': dict(response.headers) if response else dict(),
       'data': None
     }
     bytes_of_data = len(result['raw']) if result['raw'] else 0
@@ -254,8 +255,9 @@ class CoreApi(object):
       else:
         # JSON response
         try:
-          if result['raw']:
-            result['data'] = json.loads(result['raw'])
+          if result['raw'] and result['status'] != 204:
+            result['type'] = result['headers']['content-type']
+            result['data'] = json.loads(result['raw']) if 'json' in result['type'] else None
         except Exception, json_err:
           # report the exception as 'info' because it's not fatal and the data is 
           # still captured in result['raw']
