@@ -18,7 +18,7 @@ About ~60% of the Deep Security APIs are currently supported in the SDK. The goo
 
 ## Requirements
 
-The project only uses models in the standard library but does require python 2.7 or higher.
+The project only uses modules in the standard library but does require python 2.7 or higher.
 
 ## Usage
 
