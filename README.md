@@ -16,6 +16,10 @@ The general structure of the SDK is set. We learned a lot in the v1 implementati
 
 About ~60% of the Deep Security APIs are currently supported in the SDK. The good news is that the areas that are supported are the critical ones to integrating Deep Security into your cloud and hybrid cloud deployments. Look for rapid progress to bridge the gap with the remaining 40%.
 
+## Requirements
+
+The project only uses models in the standard library but does require python 2.7 or higher.
+
 ## Usage
 
 ```python
