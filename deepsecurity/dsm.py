@@ -24,9 +24,9 @@ class Manager(core.CoreApi):
     core.CoreApi.__init__(self)
     self._hostname = None
     self._port = port
-    self._tenant = unicode(tenant, "utf-8")
-    self._username = unicode(username, "utf-8")
-    self._password = unicode(password, "utf-8")
+    self._tenant = unicode(tenant, "utf-8") if tenant else None
+    self._username = unicode(username, "utf-8") if username else None
+    self._password = unicode(password, "utf-8") if password else None
     self._prefix = prefix
     self.ignore_ssl_validation = ignore_ssl_validation
     self.hostname = hostname

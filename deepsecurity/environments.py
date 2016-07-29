@@ -44,7 +44,7 @@ class CloudAccounts(core.CoreDict):
     if regions.has_key(region):
       regions_to_add.append(region)
     elif region == 'all':
-      regions_to_add.append(regions.keys())
+      regions_to_add = regions.keys()
     else:
       self.log("A region must be specified when add an AWS account to Deep Security")
 
