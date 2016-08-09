@@ -151,9 +151,8 @@ class Rule(core.CoreObject):
     if api_response: self._set_properties(api_response, log_func)  
 
 class IPList(core.CoreObject):
-  def __init__(self, manager=None, api_response=None, log_func=None, rule_type=None):
+  def __init__(self, manager=None, api_response=None, log_func=None):
     self.manager = manager
-    self.rule_type = rule_type
     self.addresses = []
     if api_response: self._set_properties(api_response, log_func)
     self._split_items()
