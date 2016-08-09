@@ -298,7 +298,7 @@ class CoreApi(object):
     # convert any nil values to the proper format
     soap_xml = re.sub(r'<([^>]+)></\1>', r'<\1 xsi:nil="true" />', soap_xml)
 
-    return soap_xml
+    return soap_xml.encode('utf-8')
 
   def log(self, message='', err=None, level='info'):
     """
