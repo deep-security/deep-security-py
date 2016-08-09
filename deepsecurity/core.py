@@ -201,7 +201,7 @@ class CoreApi(object):
       url_request = urllib2.Request(url, data=data, headers=headers)
       request_type = 'POST'
       self.log("Making a SOAP request with headers {}".format(headers), level='debug')
-      self.log(u"   and data {}".format(data), level='debug')
+      self.log("   and data {}".format(data), level='debug')
     elif request['call'] == 'authentication/logout':
       url_request = urllib2.Request(url, headers=headers)
       setattr(url_request, 'get_method', lambda: 'DELETE') # make this request use the DELETE HTTP verb
@@ -212,7 +212,7 @@ class CoreApi(object):
       url_request = urllib2.Request(url, data=json.dumps(request['data']), headers=headers)
       request_type = 'POST'
       self.log("Making a REST POST request with headers {}".format(headers), level='debug')
-      self.log(u"    and data {}".format(request['data']), level='debug')
+      self.log("    and data {}".format(request['data']), level='debug')
     else:
       # GET
       url_request = urllib2.Request(url, headers=headers)
