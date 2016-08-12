@@ -76,11 +76,12 @@ class CoreApi(object):
 
     return logger
 
-  def _get_request_format(self, api=None, call=None):
+  def _get_request_format(self, api=None, call=None, use_cookie_auth=False):
     if not api: api = self.API_TYPE_SOAP
     return {
       'api': api,
       'call': call,
+      'use_cookie_auth': use_cookie_auth,
       'query': None,
       'data': None,
     }
@@ -107,6 +108,9 @@ class CoreApi(object):
         Data to post. For SOAP API calls this will be the SOAP envelope. For
         REST API calls this will be a dict converted to JSON automatically 
         by this method
+
+      use_cookie_auth
+        Whether or not to use an HTTP Cookie in lieu of a querystring for authorization
 
     ## Output
 
@@ -139,9 +143,9 @@ class CoreApi(object):
     # add the authentication parameters
     if auth_required:
       if request['api'] == self.API_TYPE_REST:
-        # sID is a query string
-        if not request['query']: request['query'] = {}
-        request['query']['sID'] = self._sessions[self.API_TYPE_REST]
+        if not request['use_cookie_auth']: # sID is a query string
+          if not request['query']: request['query'] = {}
+          request['query']['sID'] = self._sessions[self.API_TYPE_REST]
       elif request['api'] == self.API_TYPE_SOAP:
         # sID is part of the data
         if not request['data']: request['data'] = {}
@@ -182,6 +186,11 @@ class CoreApi(object):
 
     # authentication calls don't accept the Accept header
     if request['call'].startswith('authentication'): del(headers['Accept'])
+    
+    # some rest calls use a cookie to pass the sID
+    if request['api'] == self.API_TYPE_REST and request['use_cookie_auth']:
+      headers['Cookie'] = 'sID="{}"'.format(self._sessions[self.API_TYPE_REST])
+
     if request['api'] == self.API_TYPE_REST and request['call'] in [
       'apiVersion',
       'status/manager/ping'
@@ -262,6 +271,7 @@ class CoreApi(object):
           # report the exception as 'info' because it's not fatal and the data is 
           # still captured in result['raw']
           self.log("Could not convert response from call {} to JSON. Threw exception:\n\t{}".format(request['call'], json_err), level='info')
+          
     return result
 
   def _prefix_keys(self, prefix, d):
@@ -457,7 +467,6 @@ class CoreObject(object):
         result[key] = val
 
     return result
-
 
 class CoreList(list):
   def __init__(self, *args):
