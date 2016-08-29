@@ -1,5 +1,6 @@
 # standard library
 import datetime
+import os
 import re
 
 # 3rd party libraries
@@ -24,12 +25,22 @@ class Manager(core.CoreApi):
     core.CoreApi.__init__(self)
     self._hostname = None
     self._port = port
-    self._tenant = unicode(tenant, "utf-8") if tenant else None # no harm in converting to ensure compatibility with non-latin tenant names
-    self._username = unicode(username, "utf-8") if username else None
-    self._password = unicode(password, "utf-8") if password else None
+    self._tenant = None
+    self._username = None
+    self._password = None
     self._prefix = prefix
     self.ignore_ssl_validation = ignore_ssl_validation
     self.hostname = hostname
+
+    self._get_local_config_file()
+
+    # allow for explicit override
+    if tenant:
+      self._tenant = unicode(tenant, "utf-8")
+    if username:
+      self._username = unicode(username, "utf-8")
+    if password:
+      self._password = unicode(password, "utf-8")
 
     self.computer_groups = computers.ComputerGroups(manager=self)
     self.computers = computers.Computers(manager=self)
@@ -123,6 +134,51 @@ class Manager(core.CoreApi):
     """
     self.sign_out()
     self.sign_in()
+
+  def _get_local_config_file(self):
+    """
+    Look for a local config file containing the credentials similar to the AWS CLI
+
+    Path checked is ( via os.path.expanduser(path) ):
+      ~/.deepsecurity/credentials
+      C:\Users\USERNAME\.deepsecurity\credentials
+
+    !!! Remember that by storing credentials on the local disk you are increasing the
+        risk of compromise as you've expanded the attack surface. If an attacker gains
+        access to your local machine then can now get the credentials to your Deep Security
+        installation and compromise the security of other systems.
+
+        Use the role-based access control in Deep Security to ensure that you reduce the
+        permissions assigned to the account your using to automate the system
+    """
+    user_credentials_path = os.path.expanduser('~/.deepsecurity/credentials')
+    if os.path.exists(user_credentials_path):
+      self.log("Found local credentials file at [{}]".format(user_credentials_path))
+      credentials = {
+        'username': None,
+        'password': None,
+        'tenant': None,
+      }
+      try:
+        credential_line_pattern = re.compile(r'(?P<key>\w+) = (?P<val>[^\n]+)')
+        with open(user_credentials_path, 'r') as fh:
+          for line in fh:
+            m = credential_line_pattern.search(line)
+            if m:
+              if not credentials.has_key(m.group('key')): credentials[m.group('key')] = None
+              credentials[m.group('key')] = m.group('val')
+      except Exception, err:
+        self.log("Could not read and process local credentials file.", err=err)
+
+      # verify credentials
+      for k, v in credentials.items():
+        if v:
+          if k in dir(self):
+            try:
+              setattr(self, "_{}".format(k), v)
+              self.log("Loaded {} from local credentials file".format(k))
+            except Exception, err:
+              self.log("Unable to load {} from local credentials file".format(k))
   
   def sign_in(self):
     """

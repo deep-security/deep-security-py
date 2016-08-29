@@ -108,3 +108,38 @@ mgr.cloud_accounts.add_aws_account(friendly_name, aws_access_key=AWS_ACCESS_KEY,
 #    This function is also called automatically with the object's destructor
 mgr.sign_out()
 ```
+
+## Credentials
+
+In the example about, the credentials were directly passed to the `deepsecurity.dsm.Manager()` object. You can also use a simple configuration file on the local system similar to the AWS CLI to pass credentials to the module. The file should be stored at either;
+
+```
+~/.deepsecurity/credentials
+# or
+C:\Users\USERNAME\.deepsecurity\credentials
+```
+
+The file format is very simple;
+
+```
+username = USERNAME
+password = PASSWORD
+tenant = TENANT NAME
+```
+
+Any other lines in the file are currently ignored. When this file exists you can now initialize the `deepsecurity.dsm.Manager()` object without additional parameters being passed.
+
+```python
+import deepsecurity
+# will use the local configuration file if it exists
+mgr = deepsecurity.dsm.Manager()
+
+# will override the local configuration file
+mgr = deepsecurity.dsm.Manager(username="NEW USER", password="NEW PASSWORD", tenant="ANOTHER TENANT")
+```
+
+### 💥💥💥💥💥 WARNING 💥💥💥💥💥
+
+Storing the credentials on the local disk increases the attack surface for Deep Security. If an attacker were to compromise the local system, they will be able to access Deep Security as a legitimate user. It is critical that you use the role-based access control in Deep Security in order to restrict the permissions granted to the API user to the bare minimum required to complete the intention tasks ([the principle of least privilege](https://en.wikipedia.org/wiki/Principle_of_least_privilege)).
+
+Think twice before storing the credentials locally. It's not necessarily bad, you just need to be aware of the risk.
