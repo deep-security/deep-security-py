@@ -122,6 +122,7 @@ C:\Users\USERNAME\.deepsecurity\credentials
 The file format is very simple;
 
 ```
+[default]
 username = USERNAME
 password = PASSWORD
 tenant = TENANT NAME
