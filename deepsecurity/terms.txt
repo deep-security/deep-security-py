@@ -197,6 +197,7 @@ items
 key
 language
 lastAnitMalwareScheduledScan
+lastAntiMalwareScheduledScan
 lastAntiMalwareEvent
 lastAntiMalwareManualScan
 lastAntiMalwareScheduledScan
