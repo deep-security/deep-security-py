@@ -146,6 +146,8 @@ class CoreApi(object):
         if not request['use_cookie_auth']: # sID is a query string
           if not request['query']: request['query'] = {}
           request['query']['sID'] = self._sessions[self.API_TYPE_REST]
+        else: # using cookie authentication
+          pass
       elif request['api'] == self.API_TYPE_SOAP:
         # sID is part of the data
         if not request['data']: request['data'] = {}
@@ -189,7 +191,7 @@ class CoreApi(object):
     
     # some rest calls use a cookie to pass the sID
     if request['api'] == self.API_TYPE_REST and request['use_cookie_auth']:
-      headers['Cookie'] = 'sID="{}"'.format(self._sessions[self.API_TYPE_REST])
+      headers['Cookie'] = 'sID={}'.format(self._sessions[self.API_TYPE_REST])
 
     if request['api'] == self.API_TYPE_REST and request['call'] in [
       'apiVersion',
@@ -447,10 +449,30 @@ class CoreObject(object):
         setattr(self, new_key, val)
       except Exception, err:
         if log_func:
-          log_func("Could not set property {} to value {} for object {}".format(k, v, s))
+          log_func("Could not set property {} to value {} for object {}".format(k, v, self))
           try:
             setattr(self, log, log_func)
           except: pass
+
+  def add_properties(self, rest_api_response, prefix=""):
+    """
+    Add new properties to an existing object
+    """
+    if type(rest_api_response) == type(dict()):
+      for k,v in rest_api_response.items():
+        if type(v) == type(dict):
+          for k1, v1 in v.items():
+            new_key1 = "{}_{}".format(prefix, translation.Terms.get(k1)).strip()
+            try:
+              setattr(self, new_key1, v1)
+            except Exception, err:
+              self.log("Could not set property {} to value {} for object {}".format(new_key1, v1, self))
+        else:
+          new_key = "{}_{}".format(prefix, translation.Terms.get(k)).strip()
+          try:
+            setattr(self, new_key, v)
+          except Exception, err:
+            self.log("Could not set property {} to value {} for object {}".format(k, v, self))
 
   def to_dict(self):
     """

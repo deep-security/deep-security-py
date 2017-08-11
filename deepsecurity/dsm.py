@@ -20,7 +20,7 @@ class Manager(core.CoreApi):
       username=None,
       password=None,
       prefix="",
-      ignore_ssl_validation=False
+      ignore_ssl_validation=False,
       ):
     core.CoreApi.__init__(self)
     self._hostname = None

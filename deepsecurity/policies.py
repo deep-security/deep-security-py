@@ -31,6 +31,17 @@ class Policies(core.CoreDict):
           except Exception, err:
             self.log("Could not add Policy {}".format(policy_obj), level='warning', err=err)
 
+          # add the application control section of the policy
+          if policy_obj.id:
+            appctrl_call = self.manager._get_request_format(api=self.manager.API_TYPE_REST, call='/policies/{}/application-control'.format(policy_obj.id))
+            appctrl_call['use_cookie_auth'] = True
+            appctrl_response = self.manager._request(appctrl_call)
+            print appctrl_response
+            if appctrl_response and appctrl_response['status'] == 200:
+              if appctrl_response.has_key('data') and appctrl_response['data'].has_key('DescribeApplicationControlPolicyResponse') and appctrl_response['data']['DescribeApplicationControlPolicyResponse'].has_key('appControlPolicyParameters'):
+                self.log("Adding additional policy properties related to Application Control", level='debug')
+                self[policy_obj.id].add_properties(appctrl_response['data']['DescribeApplicationControlPolicyResponse']['appControlPolicyParameters'], prefix="application_control")
+
     return len(self)
 
   def create(self, name, parent_profile_id=None,
