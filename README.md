@@ -1,10 +1,12 @@
 # DeepSecurity.py
 
-A unified python SDK for the Deep Security APIs
+A unified Python SDK for both SOAP and REST APIs in Deep Security Manager 9.6 and 10.0-10.3. 
+
+*Note: DOES NOT SUPPORT the new REST API in Deep Security Manager 11.1+. Use the new, officially supported Python SDKs instead. See the [Deep Security Automation Center](https://automation.deepsecurity.trendmicro.com/).*
 
 ## Support
 
-This is a community project and while you will see contributions from the Deep Security team, there is no official Trend Micro support for this project. The official documentation for the Deep Security APIs is available from the [Trend Micro Online Help Centre](http://docs.trendmicro.com/en-us/enterprise/deep-security.aspx). 
+This is a community project. While you might see contributions from the Deep Security team, there is no official Trend Micro support for this project. The official documentation for the Deep Security APIs is available from the [Deep Security Automation Center](https://automation.deepsecurity.trendmicro.com/). 
 
 Tutorials, feature-specific help, and other information about Deep Security is available from the [Deep Security Help Center](https://help.deepsecurity.trendmicro.com/Welcome.html). 
 
@@ -12,21 +14,21 @@ For Deep Security specific issues, please use the regular Trend Micro support ch
 
 ## History
 
-Deep Security has two APIs that complement each other; one via a SOAP interface (the classic API), and a REST interface (the new API). New functionality is being implemented in the REST interface, classic functionality sits in the SOAP API.
+Deep Security has two APIs that complement each other: a SOAP interface (the classic API), and a REST interface (the new API). Newer functionality is implemented in the REST interface; classic functionality sits in the SOAP API.
 
-As of version 9.6, most projects using the API are going to interact with both APIs. This SDK presents a unified front so the you don't have to differentiate between the two.
+As of Deep Security Manager 9.6, most projects using the API are going to interact with both APIs. This SDK presents a unified front so the you don't have to differentiate between the two.
 
-This is the second version of this SDK and it represents a restructuring of how you interact with Deep Security. [v1 is still available](https://github.com/deep-security/deep-security-py/tree/v1.0) in this repo but should be considered archival.
+This is the second version of this SDK and it represents a restructuring of how you interact with Deep Security. [v1 is still available](https://github.com/deep-security/deep-security-py/tree/v1.0) in this repository, but should be considered archives.
 
 ## Project
 
 The general structure of the SDK is set. We learned a lot in the v1 implementation and have endeavored to make sure that v2+ is simpler to work with while--at the same time--being easier to maintain.
 
-About ~60% of the Deep Security APIs are currently supported in the SDK. The good news is that the areas that are supported are the critical ones to integrating Deep Security into your cloud and hybrid cloud deployments. Look for rapid progress to bridge the gap with the remaining 40%.
+About ~60% of the Deep Security APIs are currently supported in the SDK. The good news is that the areas that are supported are the critical ones to integrating Deep Security into your cloud and hybrid cloud deployments.
 
 ## Requirements
 
-The project only uses modules in the standard library but does require python 2.7 or higher.
+Python 2.7 or newer. The project only uses modules in the standard library.
 
 ## Usage
 
@@ -149,6 +151,6 @@ mgr = deepsecurity.dsm.Manager(username="NEW USER", password="NEW PASSWORD", ten
 
 ### 💥💥💥💥💥 WARNING 💥💥💥💥💥
 
-Storing the credentials on the local disk increases the attack surface for Deep Security. If an attacker were to compromise the local system, they will be able to access Deep Security as a legitimate user. It is critical that you use the role-based access control in Deep Security in order to restrict the permissions granted to the API user to the bare minimum required to complete the intention tasks ([the principle of least privilege](https://en.wikipedia.org/wiki/Principle_of_least_privilege)).
+Storing the credentials on the local disk increases the attack surface for Deep Security. If an attacker were to compromise the local system, they will be able to access Deep Security as a legitimate user. It is critical that you use the role-based access control (RBAC) in Deep Security in order to restrict the permissions granted to the API user to the bare minimum required to complete the intention tasks ([the principle of least privilege](https://en.wikipedia.org/wiki/Principle_of_least_privilege)).
 
-Think twice before storing the credentials locally. It's not necessarily bad, you just need to be aware of the risk.
+Think twice before storing the credentials locally. It's not necessarily bad; you just need to be aware of the risk.
