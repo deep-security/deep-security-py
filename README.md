@@ -1,30 +1,32 @@
-# DeepSecurity.py
+# Unified Python SDK for Deep Security
 
 A unified Python SDK for both SOAP and REST APIs in Deep Security Manager 9.6 and 10.0-10.3. 
 
-*Note: DOES NOT SUPPORT the new REST API in Deep Security Manager 11.1+. Use the new, officially supported Python SDKs instead. See the [Deep Security Automation Center](https://automation.deepsecurity.trendmicro.com/).*
+**Note: DOES NOT SUPPORT the new REST API in Deep Security Manager 11.1+. Use the new, officially 
+supported Python SDKs instead. See the [Deep Security Automation Center](https://automation.deepsecurity.trendmicro.com/).**
 
-## Support
+Deep Security has two APIs that complement each other: a SOAP interface (the classic API), and a REST interface 
+(the new API). Newer functionality is implemented in the REST interface; classic functionality sits in the SOAP API.
 
-This is a community project. While you might see contributions from the Deep Security team, there is no official Trend Micro support for this project. The official documentation for the Deep Security APIs is available from the [Deep Security Automation Center](https://automation.deepsecurity.trendmicro.com/). 
+As of Deep Security Manager 9.6, most projects using the API are going to interact with both APIs. This SDK presents a 
+unified front so the you don't have to differentiate between the two.
 
-Tutorials, feature-specific help, and other information about Deep Security is available from the [Deep Security Help Center](https://help.deepsecurity.trendmicro.com/Welcome.html). 
+This is the second version of this SDK and it represents a restructuring of how you interact with 
+Deep Security. [v1 is still available](https://github.com/deep-security/deep-security-py/tree/v1.0) 
+in this repository, but should be considered archives. We learned a lot in the v1 implementation and have endeavored 
+to make sure that v2+ is simpler to work with while--at the same time--being easier to maintain.
 
-For Deep Security specific issues, please use the regular Trend Micro support channels. For issues with the code in this repository, please [open an issue here on GitHub](https://github.com/deep-security/deep-security-py/issues).
+About ~60% of the Deep Security APIs are currently supported in the SDK. The good news is that the areas 
+that are supported are the critical ones to integrating Deep Security into your cloud and hybrid cloud deployments.
 
-## History
 
-Deep Security has two APIs that complement each other: a SOAP interface (the classic API), and a REST interface (the new API). Newer functionality is implemented in the REST interface; classic functionality sits in the SOAP API.
+## Table of Contents
 
-As of Deep Security Manager 9.6, most projects using the API are going to interact with both APIs. This SDK presents a unified front so the you don't have to differentiate between the two.
+* [Requirements](#requirements)
+* [Usage](#usage)
+* [Support](#support)
+* [Contribute](#contribute)
 
-This is the second version of this SDK and it represents a restructuring of how you interact with Deep Security. [v1 is still available](https://github.com/deep-security/deep-security-py/tree/v1.0) in this repository, but should be considered archives.
-
-## Project
-
-The general structure of the SDK is set. We learned a lot in the v1 implementation and have endeavored to make sure that v2+ is simpler to work with while--at the same time--being easier to maintain.
-
-About ~60% of the Deep Security APIs are currently supported in the SDK. The good news is that the areas that are supported are the critical ones to integrating Deep Security into your cloud and hybrid cloud deployments.
 
 ## Requirements
 
@@ -119,9 +121,11 @@ mgr.cloud_accounts.add_aws_account(friendly_name, aws_access_key=AWS_ACCESS_KEY,
 mgr.sign_out()
 ```
 
-## Credentials
+### Credentials
 
-In the example about, the credentials were directly passed to the `deepsecurity.dsm.Manager()` object. You can also use a simple configuration file on the local system similar to the AWS CLI to pass credentials to the module. The file should be stored at either;
+In the example above, the credentials were directly passed to the `deepsecurity.dsm.Manager()` 
+object. You can also use a simple configuration file on the local system similar to the AWS 
+CLI to pass credentials to the module. The file should be stored at either:
 
 ```
 ~/.deepsecurity/credentials
@@ -129,7 +133,7 @@ In the example about, the credentials were directly passed to the `deepsecurity.
 C:\Users\USERNAME\.deepsecurity\credentials
 ```
 
-The file format is very simple;
+The file format is very simple.
 
 ```
 [default]
@@ -138,7 +142,8 @@ password = PASSWORD
 tenant = TENANT NAME
 ```
 
-Any other lines in the file are currently ignored. When this file exists you can now initialize the `deepsecurity.dsm.Manager()` object without additional parameters being passed.
+Any other lines in the file are currently ignored. When this file exists you can now 
+initialize the `deepsecurity.dsm.Manager()` object without additional parameters being passed.
 
 ```python
 import deepsecurity
@@ -151,6 +156,34 @@ mgr = deepsecurity.dsm.Manager(username="NEW USER", password="NEW PASSWORD", ten
 
 ### 💥💥💥💥💥 WARNING 💥💥💥💥💥
 
-Storing the credentials on the local disk increases the attack surface for Deep Security. If an attacker were to compromise the local system, they will be able to access Deep Security as a legitimate user. It is critical that you use the role-based access control (RBAC) in Deep Security in order to restrict the permissions granted to the API user to the bare minimum required to complete the intention tasks ([the principle of least privilege](https://en.wikipedia.org/wiki/Principle_of_least_privilege)).
+Storing the credentials on the local disk increases the attack surface for Deep Security. If 
+an attacker compromises the local system, they will be able to access Deep Security 
+as a legitimate user. It is critical that you use the role-based access control (RBAC) in 
+Deep Security in order to restrict the permissions granted to the API user to the bare 
+minimum required to complete the intended tasks ([the principle of least privilege](https://en.wikipedia.org/wiki/Principle_of_least_privilege)).
 
-Think twice before storing the credentials locally. It's not necessarily bad; you just need to be aware of the risk.
+Think twice before storing the credentials locally. It increases risk.
+
+## Support
+
+This is an Open Source community project. Project contributors may be able to help, 
+depending on their time and availability. Please be specific about what you're 
+trying to do, your system, and steps to reproduce the problem.
+
+For bug reports or feature requests, please 
+[open an issue](../issues). 
+You are welcome to [contribute](#contribute).
+
+Official support from Trend Micro is not available. Individual contributors may be 
+Trend Micro employees, but are not official support.
+
+## Contribute
+
+We accept contributions from the community. To submit changes:
+
+1. Fork this repository.
+1. Create a new feature branch.
+1. Make your changes.
+1. Submit a pull request with an explanation of your changes or additions.
+
+We will review and work with you to release the code.
